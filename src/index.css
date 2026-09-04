@@ -1,0 +1,182 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  body {
+    background-color: #0b0d14;
+    color: #c8ccee;
+    font-family: 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Keyboard focus — visible, never just removed */
+  :focus-visible {
+    outline: 2px solid #5c65f5;
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+}
+
+@layer components {
+  /* ── Cards & Surfaces ─────────────────────────────────── */
+  /* No glassmorphism. Solid surfaces with depth. */
+  .card {
+    background-color: #111320;
+    border: 1px solid #252840;
+  }
+
+  .card-elevated {
+    background-color: #171b2d;
+    border: 1px solid #252840;
+  }
+
+  /* ── Form Elements ────────────────────────────────────── */
+  .input-field {
+    width: 100%;
+    background-color: #0b0d14;
+    border: 1px solid #252840;
+    border-radius: 8px;
+    padding: 12px 16px;
+    color: #edf0ff;
+    font-size: 14px;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    outline: none;
+  }
+
+  .input-field::placeholder {
+    color: #3a3f5c;
+  }
+
+  .input-field:focus {
+    border-color: #5c65f5;
+    box-shadow: 0 0 0 3px rgba(92, 101, 245, 0.15);
+  }
+
+  /* ── Buttons ──────────────────────────────────────────── */
+  .btn-primary {
+    width: 100%;
+    background-color: #5c65f5;
+    color: #fff;
+    font-weight: 500;
+    font-size: 14px;
+    border-radius: 8px;
+    padding: 12px 20px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.15s, transform 0.1s;
+  }
+
+  .btn-primary:hover {
+    background-color: #4148e0;
+  }
+
+  .btn-primary:active {
+    transform: scale(0.98);
+    background-color: #3238c4;
+  }
+
+  .btn-primary:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .btn-secondary {
+    width: 100%;
+    background-color: #171b2d;
+    color: #c8ccee;
+    font-weight: 500;
+    font-size: 14px;
+    border-radius: 8px;
+    padding: 12px 20px;
+    border: 1px solid #252840;
+    cursor: pointer;
+    transition: background-color 0.15s, transform 0.1s;
+  }
+
+  .btn-secondary:hover {
+    background-color: #1f243a;
+  }
+
+  .btn-secondary:active {
+    transform: scale(0.98);
+  }
+
+  /* ── Toast ────────────────────────────────────────────── */
+  .toast {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 500;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    max-width: 360px;
+  }
+
+  .toast-success {
+    background-color: #0f1f15;
+    border: 1px solid #1a4a28;
+    color: #6fcf97;
+  }
+
+  .toast-error {
+    background-color: #1f0f0f;
+    border: 1px solid #4a1a1a;
+    color: #eb5757;
+  }
+
+  .toast-info {
+    background-color: #111320;
+    border: 1px solid #252840;
+    color: #c8ccee;
+  }
+
+  /* ── Scrollbar ────────────────────────────────────────── */
+  ::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background-color: #252840;
+    border-radius: 999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: #3a3f5c;
+  }
+}
+
+@layer utilities {
+  /* Message bubble entrance */
+  .msg-enter {
+    animation: msgEnter 0.18s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  @keyframes msgEnter {
+    from { opacity: 0; transform: translateY(4px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+}
+
+/* Motion sensitivity */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
