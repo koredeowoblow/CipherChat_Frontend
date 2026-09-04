@@ -6,17 +6,17 @@
 
 @layer base {
   :root {
-    /* Metallic Teal Accent */
-    --color-accent-50: #f0f7f9;
-    --color-accent-100: #dbeef2;
-    --color-accent-200: #bddde4;
-    --color-accent-300: #90c7d2;
-    --color-accent-400: #62aebc;
-    --color-accent-500: #4292a1;
-    --color-accent-600: #377785;
-    --color-accent-700: #30616e;
-    --color-accent-800: #2c515c;
-    --color-accent-900: #27454f;
+    /* Slate Blue Accent (from new logo) */
+    --color-accent-50: #edf3f5;
+    --color-accent-100: #d2e1e7;
+    --color-accent-200: #adc9d4;
+    --color-accent-300: #7faebb;
+    --color-accent-400: #5790a0;
+    --color-accent-500: #3c7587;
+    --color-accent-600: #305f6f;
+    --color-accent-700: #294c5b;
+    --color-accent-800: #25404d;
+    --color-accent-900: #223742;
 
     /* Light UI System (Steel) */
     --color-ui-base: #f5f6f8;
@@ -34,19 +34,19 @@
     --color-ui-warning: #f59e0b;
     --color-ui-warning-bg: rgba(245, 158, 11, 0.1);
     --color-ui-warning-border: rgba(245, 158, 11, 0.2);
-    --color-ui-success: #4292a1;
+    --color-ui-success: #3c7587;
   }
 
   .dark {
-    /* Dark UI System (Gunmetal) */
-    --color-ui-base: #0f1216;
-    --color-ui-surface: #16191e;
-    --color-ui-elevated: #1e2229;
-    --color-ui-border: #2c313a;
-    --color-ui-border2: #21252d;
-    --color-ui-muted: #566170;
-    --color-ui-subtle: #8a93a5;
-    --color-ui-primary: #cbd1db;
+    /* Dark UI System (Slate Blue) */
+    --color-ui-base: #111417;
+    --color-ui-surface: #191d22;
+    --color-ui-elevated: #22272e;
+    --color-ui-border: #303741;
+    --color-ui-border2: #242a31;
+    --color-ui-muted: #5e6875;
+    --color-ui-subtle: #8c97a5;
+    --color-ui-primary: #cbd2db;
     --color-ui-bright: #eef0f4;
     --color-ui-danger: #f87171;
     --color-ui-danger-bg: rgba(248, 113, 113, 0.1);
@@ -54,7 +54,7 @@
     --color-ui-warning: #fbbf24;
     --color-ui-warning-bg: rgba(251, 191, 36, 0.1);
     --color-ui-warning-border: rgba(251, 191, 36, 0.2);
-    --color-ui-success: #4292a1;
+    --color-ui-success: #3c7587;
   }
 
   *, *::before, *::after {
