@@ -127,9 +127,7 @@ export default function Register() {
       <div className="hidden lg:flex flex-col justify-between w-[420px] flex-shrink-0 bg-ui-surface dark:bg-ui-base/50 border-r border-ui-border2 p-12">
         <div>
           <div className="flex items-center gap-2.5 mb-16">
-            <div className="w-8 h-8 rounded-lg bg-accent-500 flex items-center justify-center">
-              <Lock size={16} className="text-white" aria-hidden="true" />
-            </div>
+            <img src="/logo.png" alt="CipherChat Logo" className="w-10 h-10 object-contain" />
             <span className="text-ui-bright font-semibold text-lg tracking-tight">CipherChat</span>
           </div>
 

@@ -768,9 +768,7 @@ export default function Chat() {
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-4 border-b border-ui-border2">
           <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-lg bg-accent-500 flex items-center justify-center flex-shrink-0" aria-hidden>
-              <Lock size={13} className="text-white" />
-            </div>
+            <img src="/logo.png" alt="CipherChat Logo" className="w-8 h-8 object-contain flex-shrink-0" />
             <span className="text-ui-bright font-semibold text-sm tracking-tight">CipherChat</span>
           </div>
           <div className="flex items-center gap-1">

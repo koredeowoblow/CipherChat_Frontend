@@ -6,55 +6,55 @@
 
 @layer base {
   :root {
-    /* Emerald Accent */
-    --color-accent-50: #ecfdf5;
-    --color-accent-100: #d1fae5;
-    --color-accent-200: #a7f3d0;
-    --color-accent-300: #6ee7b7;
-    --color-accent-400: #34d399;
-    --color-accent-500: #10b981;
-    --color-accent-600: #059669;
-    --color-accent-700: #047857;
-    --color-accent-800: #065f46;
-    --color-accent-900: #064e3b;
+    /* Metallic Teal Accent */
+    --color-accent-50: #f0f7f9;
+    --color-accent-100: #dbeef2;
+    --color-accent-200: #bddde4;
+    --color-accent-300: #90c7d2;
+    --color-accent-400: #62aebc;
+    --color-accent-500: #4292a1;
+    --color-accent-600: #377785;
+    --color-accent-700: #30616e;
+    --color-accent-800: #2c515c;
+    --color-accent-900: #27454f;
 
-    /* Light UI System */
-    --color-ui-base: #f9fafb;
+    /* Light UI System (Steel) */
+    --color-ui-base: #f5f6f8;
     --color-ui-surface: #ffffff;
-    --color-ui-elevated: #f3f4f6;
-    --color-ui-border: #e5e7eb;
-    --color-ui-border2: #d1d5db;
-    --color-ui-muted: #9ca3af;
-    --color-ui-subtle: #6b7280;
-    --color-ui-primary: #374151;
-    --color-ui-bright: #111827;
+    --color-ui-elevated: #ebedf2;
+    --color-ui-border: #dfe2e8;
+    --color-ui-border2: #c6cace;
+    --color-ui-muted: #939ba6;
+    --color-ui-subtle: #677180;
+    --color-ui-primary: #384252;
+    --color-ui-bright: #121926;
     --color-ui-danger: #ef4444;
     --color-ui-danger-bg: rgba(239, 68, 68, 0.08);
     --color-ui-danger-border: rgba(239, 68, 68, 0.2);
     --color-ui-warning: #f59e0b;
     --color-ui-warning-bg: rgba(245, 158, 11, 0.1);
     --color-ui-warning-border: rgba(245, 158, 11, 0.2);
-    --color-ui-success: #10b981;
+    --color-ui-success: #4292a1;
   }
 
   .dark {
-    /* Dark UI System */
-    --color-ui-base: #0b0d14;
-    --color-ui-surface: #111320;
-    --color-ui-elevated: #171b2d;
-    --color-ui-border: #252840;
-    --color-ui-border2: #1c1f32;
-    --color-ui-muted: #3a3f5c;
-    --color-ui-subtle: #8890b0;
-    --color-ui-primary: #c8ccee;
-    --color-ui-bright: #edf0ff;
+    /* Dark UI System (Gunmetal) */
+    --color-ui-base: #0f1216;
+    --color-ui-surface: #16191e;
+    --color-ui-elevated: #1e2229;
+    --color-ui-border: #2c313a;
+    --color-ui-border2: #21252d;
+    --color-ui-muted: #566170;
+    --color-ui-subtle: #8a93a5;
+    --color-ui-primary: #cbd1db;
+    --color-ui-bright: #eef0f4;
     --color-ui-danger: #f87171;
     --color-ui-danger-bg: rgba(248, 113, 113, 0.1);
     --color-ui-danger-border: rgba(248, 113, 113, 0.2);
     --color-ui-warning: #fbbf24;
     --color-ui-warning-bg: rgba(251, 191, 36, 0.1);
     --color-ui-warning-border: rgba(251, 191, 36, 0.2);
-    --color-ui-success: #10b981;
+    --color-ui-success: #4292a1;
   }
 
   *, *::before, *::after {
@@ -88,25 +88,34 @@
 
   .input-field:focus {
     @apply border-accent-500;
-    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15); /* Emerald 500 w/ opacity */
+    box-shadow: 0 0 0 3px rgba(66, 146, 161, 0.15), inset 0 1px 2px rgba(0, 0, 0, 0.1);
   }
 
   /* ── Buttons ──────────────────────────────────────────── */
   .btn-primary {
-    @apply w-full bg-accent-500 text-white font-medium text-sm rounded-lg px-5 py-3 transition-colors duration-150;
+    @apply w-full text-white font-medium text-sm rounded-lg px-5 py-3 transition-all duration-150;
+    background: linear-gradient(180deg, var(--color-accent-400) 0%, var(--color-accent-500) 100%);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 1px 3px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--color-accent-600);
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
   }
   .btn-primary:hover {
-    @apply bg-accent-600;
+    background: linear-gradient(180deg, var(--color-accent-300) 0%, var(--color-accent-400) 100%);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 2px 5px rgba(0, 0, 0, 0.15);
   }
   .btn-primary:active {
-    @apply scale-[0.98] bg-accent-700;
+    @apply scale-[0.98];
+    background: var(--color-accent-600);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
   }
   .btn-primary:disabled {
     @apply opacity-50 cursor-not-allowed scale-100;
   }
 
   .btn-secondary {
-    @apply w-full bg-ui-elevated text-ui-primary font-medium text-sm rounded-lg px-5 py-3 border border-ui-border transition-colors duration-150;
+    @apply w-full bg-ui-elevated text-ui-primary font-medium text-sm rounded-lg px-5 py-3 transition-all duration-150;
+    border: 1px solid var(--color-ui-border);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 1px 2px rgba(0, 0, 0, 0.05);
   }
   .btn-secondary:hover {
     @apply bg-ui-border2; /* slightly darker/lighter */
