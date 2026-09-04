@@ -30,7 +30,10 @@ export const useWebSocket = () => {
   const connect = useCallback(() => {
     if (!token || !isMounted.current) return;
 
-    const wsBase = import.meta.env.VITE_WS_URL || 'ws://localhost:3000';
+    let wsBase = import.meta.env.VITE_WS_URL || 'ws://localhost:3000';
+    if (window.location.protocol === 'https:' && wsBase.startsWith('ws://')) {
+      wsBase = wsBase.replace('ws://', 'wss://');
+    }
     const wsUrl = `${wsBase}?token=${token}`;
     const socket = new WebSocket(wsUrl);
     ws.current = socket;
