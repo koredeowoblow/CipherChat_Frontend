@@ -10,7 +10,10 @@ import {
   Send, Search, LogOut, MessageSquare, Lock, Plus, X,
   Ban, UserCheck, UserX, ChevronDown, Menu, AlertCircle,
   CheckCircle2, Info, Settings, ShieldCheck, Download,
+  Mic, Trash2, Image as ImageIcon, Reply
 } from 'lucide-react';
+
+const EMOJIS = ['👍', '❤️', '😂', '😮', '😢', '👏'];
 
 const TYPING_TIMEOUT = 2500;
 
@@ -87,6 +90,7 @@ export default function Chat() {
     setConversations, setActiveConversation, setMessages,
     addMessage, updateMessagePlaintext, setTyping,
     removeConversation, updateConversation,
+    onlineUsers, setOnlineStatus, updateMessageReactions
   } = useChatStore();
 
   const privateKey = useKeyStore(s => s.privateKey);
@@ -105,11 +109,21 @@ export default function Chat() {
   const [userSearchResults, setUserSearchResults] = useState<any[]>([]);
   const [isSearchingUsers, setIsSearchingUsers] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [hoveredMessageId, setHoveredMessageId] = useState<string | null>(null);
+  const [replyingToMessage, setReplyingToMessage] = useState<any | null>(null);
+
+  // Audio recording state
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordingTime, setRecordingTime] = useState(0);
 
   // Refs — allow stable callbacks to read latest values without being deps
   const settingsRef = useRef<HTMLDivElement>(null);
   const typingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<BlobPart[]>([]);
+  const recordTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const conversationsRef = useRef(conversations);
   const messagesRef = useRef(messages);
   const privateKeyRef = useRef(privateKey);
@@ -271,6 +285,10 @@ export default function Chat() {
         if (payload.isTyping) {
           setTimeout(() => setTyping(payload.conversationId, payload.userId, false), TYPING_TIMEOUT + 500);
         }
+      } else if (type === 'user:online') {
+        setOnlineStatus(payload.userId, payload.isOnline);
+      } else if (type === 'message:reaction') {
+        updateMessageReactions(payload.conversationId, payload.messageId, payload.reactions);
       }
     });
 
@@ -289,6 +307,7 @@ export default function Chat() {
     if (typingTimerRef.current) clearTimeout(typingTimerRef.current);
     sendWsMessage({ type: 'user:typing', payload: { conversationId: activeConversationId, isTyping: false } });
 
+    // Ensure dummy reaction array in optimistic message
     try {
       let ss = sharedSecrets[activeConversationId];
       if (!ss) {
@@ -296,7 +315,19 @@ export default function Chat() {
         ss = cryptoService.computeSharedSecret(data.publicKey, privateKey);
         setSharedSecret(activeConversationId, ss);
       }
-      const enc = cryptoService.encryptMessage(text, ss);
+      const payloadObj: any = { type: 'text', content: text };
+      if (replyingToMessage) {
+        let preview = 'Message';
+        try {
+          const data = JSON.parse(replyingToMessage.plaintext);
+          if (data.type === 'text') preview = data.content;
+          else if (data.type === 'audio') preview = 'Audio message';
+          else if (data.type === 'image') preview = 'Image message';
+        } catch { preview = replyingToMessage.plaintext || 'Message'; }
+        payloadObj.replyTo = { id: replyingToMessage.id, preview };
+      }
+      const payloadStr = JSON.stringify(payloadObj);
+      const enc = cryptoService.encryptMessage(payloadStr, ss);
       const { data } = await api.post('/messages', {
         conversationId: activeConversationId,
         encryptedContent: enc.ciphertext,
@@ -308,11 +339,259 @@ export default function Chat() {
         id: data.id, conversationId: activeConversationId,
         senderId: user!.id, encryptedContent: enc.ciphertext,
         encryptedSessionKey: 'dummy', iv: enc.nonce,
-        authTag: 'dummy', createdAt: data.createdAt, plaintext: text,
+        authTag: 'dummy', createdAt: data.createdAt, plaintext: payloadStr,
+        reactions: []
       });
+      setReplyingToMessage(null);
     } catch {
       setInputMessage(text); // restore on failure
       showToast('Failed to send. Try again.', 'error');
+    }
+  };
+
+  // ─── Voice Notes ──────────────────────────────────────────
+  const formatTime = (secs: number) => {
+    const m = Math.floor(secs / 60).toString().padStart(2, '0');
+    const s = (secs % 60).toString().padStart(2, '0');
+    return `${m}:${s}`;
+  };
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
+
+      mediaRecorder.start();
+      setIsRecording(true);
+      setRecordingTime(0);
+
+      recordTimerRef.current = setInterval(() => {
+        setRecordingTime((prev) => prev + 1);
+      }, 1000);
+    } catch (err) {
+      showToast('Microphone access denied or not available.', 'error');
+    }
+  };
+
+  const cancelRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      mediaRecorderRef.current.stream.getTracks().forEach((track) => track.stop());
+    }
+    if (recordTimerRef.current) clearInterval(recordTimerRef.current);
+    setIsRecording(false);
+    setRecordingTime(0);
+    audioChunksRef.current = [];
+  };
+
+  const sendRecording = () => {
+    if (!mediaRecorderRef.current || !activeConversationId || !privateKey || !otherParticipant) return;
+
+    mediaRecorderRef.current.onstop = async () => {
+      if (recordTimerRef.current) clearInterval(recordTimerRef.current);
+      setIsRecording(false);
+
+      if (audioChunksRef.current.length === 0) return;
+
+      const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+      const reader = new FileReader();
+      
+      reader.onloadend = async () => {
+        const base64AudioMessage = reader.result as string;
+        
+        try {
+          let ss = sharedSecrets[activeConversationId];
+          if (!ss) {
+            const { data } = await api.get(`/users/public-key/${otherParticipant.user.id}`);
+            ss = cryptoService.computeSharedSecret(data.publicKey, privateKey);
+            setSharedSecret(activeConversationId, ss);
+          }
+          const payloadObj: any = { type: 'audio', content: base64AudioMessage };
+          if (replyingToMessage) {
+            let preview = 'Message';
+            try {
+              const data = JSON.parse(replyingToMessage.plaintext);
+              if (data.type === 'text') preview = data.content;
+              else if (data.type === 'audio') preview = 'Audio message';
+              else if (data.type === 'image') preview = 'Image message';
+            } catch { preview = replyingToMessage.plaintext || 'Message'; }
+            payloadObj.replyTo = { id: replyingToMessage.id, preview };
+          }
+          const payloadStr = JSON.stringify(payloadObj);
+          const enc = cryptoService.encryptMessage(payloadStr, ss);
+          const { data } = await api.post('/messages', {
+            conversationId: activeConversationId,
+            encryptedContent: enc.ciphertext,
+            encryptedSessionKey: 'dummy',
+            iv: enc.nonce,
+            authTag: 'dummy',
+          });
+          addMessage({
+            id: data.id, conversationId: activeConversationId,
+            senderId: user!.id, encryptedContent: enc.ciphertext,
+            encryptedSessionKey: 'dummy', iv: enc.nonce,
+            authTag: 'dummy', createdAt: data.createdAt, plaintext: payloadStr,
+          });
+          setReplyingToMessage(null);
+        } catch {
+          showToast('Failed to send voice note.', 'error');
+        }
+      };
+      
+      reader.readAsDataURL(audioBlob);
+    };
+
+    mediaRecorderRef.current.stop();
+    mediaRecorderRef.current.stream.getTracks().forEach((track) => track.stop());
+  };
+
+  // ─── Image Upload ─────────────────────────────────────────
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Reset input
+    if (fileInputRef.current) fileInputRef.current.value = '';
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = async () => {
+        // Resize logic (max 1280px)
+        const MAX_SIZE = 1280;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > MAX_SIZE) {
+            height = Math.round((height * MAX_SIZE) / width);
+            width = MAX_SIZE;
+          }
+        } else {
+          if (height > MAX_SIZE) {
+            width = Math.round((width * MAX_SIZE) / height);
+            height = MAX_SIZE;
+          }
+        }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+        ctx.drawImage(img, 0, 0, width, height);
+
+        const base64Image = canvas.toDataURL('image/jpeg', 0.8);
+
+        // Encrypt and send
+        if (!activeConversationId || !privateKey || !otherParticipant) return;
+        try {
+          let ss = sharedSecrets[activeConversationId];
+          if (!ss) {
+            const { data } = await api.get(`/users/public-key/${otherParticipant.user.id}`);
+            ss = cryptoService.computeSharedSecret(data.publicKey, privateKey);
+            setSharedSecret(activeConversationId, ss);
+          }
+          const payloadObj: any = { type: 'image', content: base64Image };
+          if (replyingToMessage) {
+            let preview = 'Message';
+            try {
+              const data = JSON.parse(replyingToMessage.plaintext);
+              if (data.type === 'text') preview = data.content;
+              else if (data.type === 'audio') preview = 'Audio message';
+              else if (data.type === 'image') preview = 'Image message';
+            } catch { preview = replyingToMessage.plaintext || 'Message'; }
+            payloadObj.replyTo = { id: replyingToMessage.id, preview };
+          }
+          const payloadStr = JSON.stringify(payloadObj);
+          const enc = cryptoService.encryptMessage(payloadStr, ss);
+          const { data } = await api.post('/messages', {
+            conversationId: activeConversationId,
+            encryptedContent: enc.ciphertext,
+            encryptedSessionKey: 'dummy',
+            iv: enc.nonce,
+            authTag: 'dummy',
+          });
+          addMessage({
+            id: data.id, conversationId: activeConversationId,
+            senderId: user!.id, encryptedContent: enc.ciphertext,
+            encryptedSessionKey: 'dummy', iv: enc.nonce,
+            authTag: 'dummy', createdAt: data.createdAt, plaintext: payloadStr,
+          });
+          setReplyingToMessage(null);
+        } catch {
+          showToast('Failed to send image.', 'error');
+        }
+      };
+      img.src = event.target?.result as string;
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const renderMessageContent = (plaintext: string | undefined) => {
+    if (!plaintext) {
+      return (
+        <span className="flex items-center gap-1.5 opacity-50 italic text-xs">
+          <Lock size={10} aria-hidden /> Decrypting…
+        </span>
+      );
+    }
+    
+    try {
+      const data = JSON.parse(plaintext);
+      
+      const replyBubble = data.replyTo ? (
+        <div 
+          className="bg-black/10 dark:bg-white/10 p-2 rounded-md mb-1.5 border-l-2 border-accent-400 text-xs overflow-hidden text-ellipsis cursor-pointer hover:bg-black/20 dark:hover:bg-white/20 transition-colors"
+        >
+          {data.replyTo.preview}
+        </div>
+      ) : null;
+
+      if (data.type === 'audio') {
+        return (
+          <div className="flex flex-col">
+            {replyBubble}
+            <audio src={data.content} controls className="max-w-[200px] sm:max-w-xs outline-none h-10" />
+          </div>
+        );
+      } else if (data.type === 'image') {
+        return (
+          <div className="flex flex-col">
+            {replyBubble}
+            <img src={data.content} alt="Encrypted attachment" className="max-w-[200px] sm:max-w-xs rounded-xl" />
+          </div>
+        );
+      } else if (data.type === 'text') {
+        return (
+          <div className="flex flex-col">
+            {replyBubble}
+            <span>{data.content}</span>
+          </div>
+        );
+      }
+    } catch (e) {
+      // Fallback for older messages that weren't JSON stringified
+      return <span>{plaintext}</span>;
+    }
+    
+    return <span>{plaintext}</span>;
+  };
+
+  const handleReact = async (messageId: string, emoji: string) => {
+    try {
+      await api.post(`/messages/${messageId}/react`, { emoji });
+      setHoveredMessageId(null);
+    } catch {
+      showToast('Failed to add reaction', 'error');
     }
   };
 
@@ -515,6 +794,7 @@ export default function Chat() {
                   <div className="relative">
                     {otherUser && <Avatar name={otherUser.username} size="sm" />}
                     {isPendingConv && <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-amber-400 border border-[var(--color-ui-surface)]" aria-hidden />}
+                    {!isPendingConv && otherUser && onlineUsers[otherUser.id] && <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-green-500 border-2 border-[var(--color-ui-surface)]" aria-hidden />}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5">
@@ -548,7 +828,10 @@ export default function Chat() {
                 <button onClick={() => setIsSidebarOpen(true)} className="md:hidden p-1.5 rounded-md text-ui-muted hover:text-ui-subtle transition-colors mr-1" aria-label="Open sidebar">
                   <Menu size={18} aria-hidden />
                 </button>
-                {otherParticipant?.user && <Avatar name={otherParticipant.user.username} />}
+                <div className="relative">
+                  {otherParticipant?.user && <Avatar name={otherParticipant.user.username} />}
+                  {otherParticipant?.user && onlineUsers[otherParticipant.user.id] && <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-green-500 border-2 border-[var(--color-ui-surface)]" aria-hidden />}
+                </div>
                 <div className="min-w-0">
                   <h1 className="text-sm font-semibold text-ui-bright truncate">{otherParticipant?.user.username}</h1>
                   <div className="flex items-center gap-1 text-ui-muted">
@@ -606,25 +889,61 @@ export default function Chat() {
                 activeMessages.map(msg => {
                   const isMine = msg.senderId === user?.id;
                   return (
-                    <div key={msg.id} className={`flex msg-enter ${isMine ? 'justify-end' : 'justify-start'}`}>
-                      <div
-                        className={`max-w-[70%] md:max-w-[60%] px-4 py-2.5 text-sm leading-relaxed break-words ${
-                          isMine 
-                            ? 'bg-accent-500 text-white rounded-[18px_18px_4px_18px]' 
-                            : 'bg-ui-elevated text-ui-primary border border-ui-border rounded-[18px_18px_18px_4px]'
-                        }`}
-                      >
-                        {msg.plaintext || (
-                          <span className="flex items-center gap-1.5 opacity-50 italic text-xs">
-                            <Lock size={10} aria-hidden /> Decrypting…
-                          </span>
-                        )}
-                        <time
-                          className={`block text-[10px] mt-1 text-right ${isMine ? 'text-accent-100' : 'text-ui-muted'}`}
-                          dateTime={msg.createdAt}
+                    <div 
+                      key={msg.id} 
+                      className={`flex msg-enter ${isMine ? 'justify-end' : 'justify-start'} group relative`}
+                      onMouseEnter={() => setHoveredMessageId(msg.id)}
+                      onMouseLeave={() => setHoveredMessageId(null)}
+                    >
+                      {/* Reaction Menu */}
+                      {hoveredMessageId === msg.id && (
+                         <div className={`absolute -top-11 ${isMine ? 'right-4' : 'left-4'} flex bg-ui-surface border border-ui-border rounded-full shadow-lg p-1 z-10 animate-fade-in gap-1`}>
+                            {EMOJIS.map(e => (
+                               <button key={e} onClick={() => handleReact(msg.id, e)} className="hover:bg-ui-elevated rounded-full p-1.5 transition-colors text-lg" aria-label={`React with ${e}`}>{e}</button>
+                            ))}
+                            <div className="w-px h-6 bg-ui-border mx-1 self-center" aria-hidden />
+                            <button onClick={() => setReplyingToMessage(msg)} className="hover:bg-ui-elevated rounded-full p-1.5 transition-colors text-ui-muted hover:text-ui-primary" aria-label="Reply to message">
+                              <Reply size={16} />
+                            </button>
+                         </div>
+                      )}
+                      
+                      <div className="flex flex-col relative">
+                        <div
+                          className={`max-w-[70%] md:max-w-full px-4 py-2.5 text-sm leading-relaxed break-words relative ${
+                            isMine 
+                              ? 'bg-accent-500 text-white rounded-[18px_18px_4px_18px]' 
+                              : 'bg-ui-elevated text-ui-primary border border-ui-border rounded-[18px_18px_18px_4px]'
+                          }`}
                         >
-                          {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                        </time>
+                          {renderMessageContent(msg.plaintext)}
+                          <time
+                            className={`block text-[10px] mt-1 text-right ${isMine ? 'text-accent-100' : 'text-ui-muted'}`}
+                            dateTime={msg.createdAt}
+                          >
+                            {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </time>
+                        </div>
+                        
+                        {/* Reactions Display */}
+                        {msg.reactions && msg.reactions.length > 0 && (
+                           <div className={`flex flex-wrap gap-1 mt-1 z-10 -ml-1 -mr-1 ${isMine ? 'justify-end' : 'justify-start'}`}>
+                              {Array.from(new Set(msg.reactions.map(r => r.emoji))).map(emoji => (
+                                 <button 
+                                   key={emoji} 
+                                   onClick={() => handleReact(msg.id, emoji)}
+                                   className={`flex items-center gap-1 bg-ui-surface border text-xs rounded-full px-2 py-0.5 shadow-sm transition-colors ${
+                                     msg.reactions!.some(r => r.emoji === emoji && r.userId === user?.id) 
+                                       ? 'border-accent-500 bg-accent-500/10' 
+                                       : 'border-ui-border hover:bg-ui-elevated'
+                                   }`}
+                                 >
+                                    <span>{emoji}</span>
+                                    <span className="text-ui-subtle">{msg.reactions!.filter(r => r.emoji === emoji).length}</span>
+                                 </button>
+                              ))}
+                           </div>
+                        )}
                       </div>
                     </div>
                   );
@@ -634,7 +953,30 @@ export default function Chat() {
             </div>
 
             {/* Input area */}
-            <div className="flex-shrink-0 px-4 md:px-8 py-4 border-t border-ui-border2">
+            <div className="flex-shrink-0 px-4 md:px-8 py-4 border-t border-ui-border2 relative">
+              {replyingToMessage && (
+                <div className="flex items-center justify-between bg-ui-elevated p-2 mb-2 rounded-lg border border-ui-border absolute bottom-full left-4 right-4 md:left-8 md:right-8 -translate-y-2 shadow-sm animate-slide-up z-20">
+                  <div className="flex flex-col overflow-hidden text-sm pl-2 border-l-2 border-accent-500">
+                    <span className="text-accent-500 font-semibold text-xs">Replying to message</span>
+                    <span className="text-ui-subtle truncate max-w-[200px] md:max-w-md">
+                      {(() => {
+                        let preview = replyingToMessage.plaintext;
+                        try {
+                          const data = JSON.parse(replyingToMessage.plaintext);
+                          if (data.type === 'text') preview = data.content;
+                          else if (data.type === 'audio') preview = 'Audio message';
+                          else if (data.type === 'image') preview = 'Image message';
+                        } catch {}
+                        return preview;
+                      })()}
+                    </span>
+                  </div>
+                  <button onClick={() => setReplyingToMessage(null)} className="p-1 text-ui-muted hover:text-ui-primary rounded-md transition-colors mr-1">
+                    <X size={16} />
+                  </button>
+                </div>
+              )}
+
               {isTypingNow && (
                 <div className="flex items-center gap-2 mb-2.5" aria-live="polite">
                   <div className="flex gap-0.5" aria-hidden>
@@ -665,8 +1007,39 @@ export default function Chat() {
                   <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" aria-hidden />
                   <span className="text-sm text-ui-muted">Waiting for {otherParticipant?.user.username} to accept…</span>
                 </div>
+              ) : isRecording ? (
+                <div className="flex items-center justify-between gap-3 px-4 py-2.5 rounded-xl text-sm transition-all" style={{ background: 'var(--color-ui-surface)', border: '1px solid var(--color-accent-500)' }}>
+                  <div className="flex items-center gap-3">
+                    <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse" aria-hidden />
+                    <span className="text-ui-bright font-medium">{formatTime(recordingTime)}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button onClick={cancelRecording} className="p-2 rounded-full text-ui-muted hover:text-red-400 hover:bg-red-500/10 transition-colors" aria-label="Cancel recording">
+                      <Trash2 size={16} aria-hidden />
+                    </button>
+                    <button onClick={sendRecording} className="w-10 h-10 flex items-center justify-center rounded-xl bg-accent-600 hover:bg-accent-500 text-white transition-colors" aria-label="Send recording">
+                      <Send size={16} aria-hidden />
+                    </button>
+                  </div>
+                </div>
               ) : (
                 <form onSubmit={handleSendMessage} className="flex gap-2" aria-label="Send a message">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    ref={fileInputRef}
+                    onChange={handleImageSelect}
+                    className="hidden"
+                    tabIndex={-1}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    aria-label="Attach image"
+                    className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-xl bg-ui-surface border border-ui-border text-ui-muted hover:text-ui-primary hover:border-ui-border2 transition-all active:scale-95"
+                  >
+                    <ImageIcon size={18} aria-hidden />
+                  </button>
                   <label htmlFor="message-input" className="sr-only">Type your message</label>
                   <input
                     id="message-input"
@@ -681,14 +1054,24 @@ export default function Chat() {
                     onKeyDown={handleInputKeyDown}
                     autoComplete="off"
                   />
-                  <button
-                    type="submit"
-                    disabled={!inputMessage.trim()}
-                    aria-label="Send message"
-                    className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-xl bg-accent-600 hover:bg-accent-500 disabled:opacity-30 disabled:cursor-not-allowed text-white transition-all active:scale-95"
-                  >
-                    <Send size={16} aria-hidden />
-                  </button>
+                  {inputMessage.trim() ? (
+                    <button
+                      type="submit"
+                      aria-label="Send message"
+                      className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-xl bg-accent-600 hover:bg-accent-500 text-white transition-all active:scale-95"
+                    >
+                      <Send size={16} aria-hidden />
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={startRecording}
+                      aria-label="Record voice note"
+                      className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-xl bg-ui-surface border border-ui-border text-ui-muted hover:text-ui-primary hover:border-ui-border2 transition-all active:scale-95"
+                    >
+                      <Mic size={18} aria-hidden />
+                    </button>
+                  )}
                 </form>
               )}
             </div>

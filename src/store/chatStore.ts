@@ -9,6 +9,7 @@ export interface Message {
   iv: string;
   authTag: string;
   createdAt: string;
+  reactions?: Array<{ emoji: string; userId: string }>;
   // Decrypted fields added on the fly
   plaintext?: string;
 }
@@ -35,15 +36,18 @@ interface ChatState {
   messages: Record<string, Message[]>;
   activeConversationId: string | null;
   typingUsers: Record<string, string[]>; // conversationId -> [userId]
+  onlineUsers: Record<string, boolean>; // userId -> isOnline
   setConversations: (conversations: Conversation[]) => void;
   addConversation: (conversation: Conversation) => void;
   removeConversation: (id: string) => void;
   updateConversation: (conversation: Conversation) => void;
   setMessages: (conversationId: string, messages: Message[]) => void;
   addMessage: (message: Message) => void;
+  updateMessageReactions: (conversationId: string, messageId: string, reactions: Array<{ emoji: string; userId: string }>) => void;
   setActiveConversation: (id: string | null) => void;
   updateMessagePlaintext: (conversationId: string, messageId: string, plaintext: string) => void;
   setTyping: (conversationId: string, userId: string, isTyping: boolean) => void;
+  setOnlineStatus: (userId: string, isOnline: boolean) => void;
 }
 
 const useChatStore = create<ChatState>((set) => ({
@@ -51,6 +55,7 @@ const useChatStore = create<ChatState>((set) => ({
   messages: {},
   activeConversationId: null,
   typingUsers: {},
+  onlineUsers: {},
 
   setConversations: (conversations) => set({ conversations }),
   
@@ -95,6 +100,16 @@ const useChatStore = create<ChatState>((set) => ({
     };
   }),
 
+  updateMessageReactions: (conversationId, messageId, reactions) => set((state) => {
+    const msgs = state.messages[conversationId] || [];
+    return {
+      messages: {
+        ...state.messages,
+        [conversationId]: msgs.map(m => m.id === messageId ? { ...m, reactions } : m)
+      }
+    };
+  }),
+
   setActiveConversation: (id) => set({ activeConversationId: id }),
 
   updateMessagePlaintext: (conversationId, messageId, plaintext) => set((state) => {
@@ -116,6 +131,10 @@ const useChatStore = create<ChatState>((set) => ({
       typingUsers: { ...state.typingUsers, [conversationId]: updated }
     };
   }),
+
+  setOnlineStatus: (userId, isOnline) => set((state) => ({
+    onlineUsers: { ...state.onlineUsers, [userId]: isOnline }
+  })),
 }));
 
 export default useChatStore;
