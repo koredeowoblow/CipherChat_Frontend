@@ -12,6 +12,7 @@ import {
   CheckCircle2, Info, Settings, ShieldCheck, Download,
   Mic, Trash2, Image as ImageIcon, Reply
 } from 'lucide-react';
+import Avatar from '../components/Avatar';
 
 const EMOJIS = ['👍', '❤️', '😂', '😮', '😢', '👏'];
 
@@ -56,26 +57,11 @@ function BlockConfirmModal({ username, onConfirm, onCancel }: { username: string
         </p>
         <div className="flex gap-3">
           <button onClick={onCancel} className="flex-1 btn-secondary text-sm py-2.5 rounded-lg">Cancel</button>
-          <button onClick={onConfirm} className="flex-1 py-2.5 rounded-lg bg-red-600 hover:bg-red-500 active:bg-red-700 text-white text-sm font-medium transition-colors">
+          <button onClick={onConfirm} className="flex-1 py-2.5 rounded-lg text-white text-sm font-medium transition-colors opacity-90 hover:opacity-100" style={{ background: 'var(--color-ui-danger)' }}>
             Block user
           </button>
         </div>
       </div>
-    </div>
-  );
-}
-
-// ─── Avatar ───────────────────────────────────────────────────
-function Avatar({ name, size = 'md' }: { name: string; size?: 'sm' | 'md' | 'lg' }) {
-  const sz = size === 'sm' ? 'w-7 h-7 text-xs' : size === 'lg' ? 'w-12 h-12 text-base' : 'w-9 h-9 text-sm';
-  const hue = (name.charCodeAt(0) * 37 + name.charCodeAt(1 % name.length) * 13) % 360;
-  return (
-    <div
-      className={`${sz} rounded-full flex items-center justify-center flex-shrink-0 font-semibold text-white select-none`}
-      style={{ backgroundColor: `hsl(${hue},55%,28%)`, boxShadow: `0 0 0 1px hsl(${hue},55%,42%)` }}
-      aria-hidden
-    >
-      {name.charAt(0).toUpperCase()}
     </div>
   );
 }
@@ -225,7 +211,7 @@ export default function Chat() {
           setActiveConversation(data[0].id);
         }
       } catch {
-        showToast('Failed to load conversations.', 'error');
+        showToast('We couldn\'t load your conversations. Please check your connection.', 'error');
       } finally {
         setIsLoadingConvs(false);
       }
@@ -253,7 +239,7 @@ export default function Chat() {
         setMessages(activeConversationId, data);
         decryptMessages(activeConversationId, data);
       } catch {
-        setMessageError('Failed to load messages.');
+        setMessageError('We couldn\'t load messages for this conversation.');
       }
     })();
   }, [activeConversationId, decryptMessages, setMessages]);
@@ -284,7 +270,7 @@ export default function Chat() {
         const existing = conversationsRef.current.find(c => c.id === payload.id);
         if (!existing) {
           setConversations([payload, ...conversationsRef.current]);
-          showToast('New chat request.', 'info');
+          showToast('You have a new chat request.', 'info');
         }
 
       } else if (type === 'conversation:accepted') {
@@ -660,8 +646,8 @@ export default function Chat() {
     try {
       const { data } = await api.post(`/conversations/${activeConversationId}/accept`);
       updateConversation(data);
-      showToast('Chat accepted!', 'success');
-    } catch { showToast('Failed to accept.', 'error'); }
+      showToast('Chat request accepted!', 'success');
+    } catch { showToast('We couldn\'t accept the request. Please try again.', 'error'); }
   };
 
   const handleRejectRequest = async () => {
@@ -670,8 +656,8 @@ export default function Chat() {
       await api.post(`/conversations/${activeConversationId}/reject`);
       removeConversation(activeConversationId);
       setActiveConversation(null);
-      showToast('Request declined.', 'info');
-    } catch { showToast('Failed to decline.', 'error'); }
+      showToast('Chat request declined.', 'info');
+    } catch { showToast('We couldn\'t decline the request. Please try again.', 'error'); }
   };
 
   // ─── Block ────────────────────────────────────────────────
@@ -681,9 +667,21 @@ export default function Chat() {
     setBlockConfirmUser(null);
     try {
       await api.post('/users/block', { blockedUserId: id });
-      showToast(`${username} blocked.`, 'success');
-    } catch { showToast('Failed to block user.', 'error'); }
+      showToast(`${username} has been blocked.`, 'success');
+    } catch { showToast('We couldn\'t block this user. Please try again.', 'error'); }
   };
+
+  // ─── Extract Active Now Users ─────────────────────────────
+  const activeNowUsers = React.useMemo(() => {
+    const usersMap = new Map();
+    conversations.forEach(conv => {
+      const otherUser = conv.participants.find((p: any) => p.user?.id !== user?.id)?.user;
+      if (otherUser && onlineUsers[otherUser.id] && !usersMap.has(otherUser.id)) {
+        usersMap.set(otherUser.id, { ...otherUser, conversationId: conv.id });
+      }
+    });
+    return Array.from(usersMap.values());
+  }, [conversations, onlineUsers, user?.id]);
 
   // ─── Export Key ───────────────────────────────────────────
   const handleExportKey = () => {
@@ -702,9 +700,9 @@ export default function Chat() {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      showToast('Key exported securely.', 'success');
+      showToast('Your key file has been downloaded successfully.', 'success');
     } catch {
-      showToast('Failed to export key.', 'error');
+      showToast('We couldn\'t export your key. Please try again.', 'error');
     }
   };
 
@@ -733,10 +731,10 @@ export default function Chat() {
           </div>
           <div className="flex items-center gap-1">
             <ThemeToggle />
-            <button onClick={handleExportKey} aria-label="Export key" title="Export key" className="p-1.5 rounded-lg text-ui-muted hover:text-ui-subtle hover:bg-ui-elevated transition-colors">
+            <button onClick={handleExportKey} aria-label="Export key" className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-ui-muted hover:text-ui-subtle hover:bg-ui-elevated transition-colors">
               <Download size={16} aria-hidden />
             </button>
-            <button onClick={logout} aria-label="Log out" title="Log out" className="p-1.5 rounded-lg text-ui-muted hover:text-ui-subtle hover:bg-ui-elevated transition-colors">
+            <button onClick={logout} aria-label="Log out" className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-ui-muted hover:text-ui-subtle hover:bg-ui-elevated transition-colors">
               <LogOut size={16} aria-hidden />
             </button>
           </div>
@@ -748,7 +746,7 @@ export default function Chat() {
           <div className="min-w-0">
             <p className="text-ui-bright text-sm font-medium truncate">{user?.username}</p>
             <div className="flex items-center gap-1.5">
-              <span className={`w-1.5 h-1.5 rounded-full ${isConnected ? 'bg-green-500' : 'bg-[var(--color-ui-muted)]'}`} aria-hidden />
+              <span className={`w-1.5 h-1.5 rounded-full ${isConnected ? 'bg-[var(--color-ui-success)]' : 'bg-[var(--color-ui-muted)]'}`} aria-hidden />
               <span className="text-[11px] text-ui-muted">{isConnected ? 'Connected' : 'Reconnecting…'}</span>
             </div>
           </div>
@@ -771,12 +769,36 @@ export default function Chat() {
           </div>
           <button
             onClick={() => setIsNewChatOpen(true)}
-            aria-label="New chat" title="New chat"
-            className="w-7 h-7 flex-shrink-0 flex items-center justify-center rounded-md bg-accent-600 hover:bg-accent-500 text-white transition-colors"
+            aria-label="New chat"
+            className="w-10 h-10 sm:w-8 sm:h-8 flex-shrink-0 flex items-center justify-center rounded-md bg-accent-600 hover:bg-accent-500 text-white transition-colors"
           >
-            <Plus size={15} aria-hidden />
+            <Plus size={16} aria-hidden />
           </button>
         </div>
+
+        {/* Active Now Carousel */}
+        {!searchQuery && activeNowUsers.length > 0 && (
+          <div className="pt-3 pb-2 border-b border-ui-border2">
+            <h3 className="px-4 text-xs font-semibold text-ui-muted mb-2 uppercase tracking-wider">Active Now</h3>
+            <div className="flex overflow-x-auto gap-3 px-4 pb-2 snap-x scrollbar-hide">
+              {activeNowUsers.map((u: any) => (
+                <button
+                  key={u.id}
+                  onClick={() => { setActiveConversation(u.conversationId); setIsSidebarOpen(false); }}
+                  className="flex flex-col items-center gap-1.5 min-w-[56px] snap-start group"
+                  aria-label={`Chat with ${u.username}`}
+                >
+                  <div className="transition-transform duration-200 group-hover:scale-105 group-active:scale-95">
+                    <Avatar name={u.username} size="lg" isOnline={true} />
+                  </div>
+                  <span className="text-[10px] text-ui-primary font-medium w-full truncate text-center opacity-80 group-hover:opacity-100 transition-opacity">
+                    {u.username.split(' ')[0]}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* List */}
         <nav className="flex-1 overflow-y-auto py-1" aria-label="Conversations">
@@ -811,18 +833,21 @@ export default function Chat() {
                     isActive ? 'bg-ui-elevated border-accent-500' : 'border-transparent hover:bg-ui-elevated'
                   }`}
                 >
-                  <div className="relative">
-                    {otherUser && <Avatar name={otherUser.username} size="sm" />}
-                    {isPendingConv && <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-amber-400 border border-[var(--color-ui-surface)]" aria-hidden />}
-                    {!isPendingConv && otherUser && onlineUsers[otherUser.id] && <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-green-500 border-2 border-[var(--color-ui-surface)]" aria-hidden />}
-                  </div>
+                  {otherUser && (
+                    <Avatar 
+                      name={otherUser.username} 
+                      size="sm" 
+                      isOnline={!isPendingConv && !!onlineUsers[otherUser.id]}
+                      hasWarningBadge={isPendingConv}
+                    />
+                  )}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5">
                       <span className={`text-sm font-medium truncate ${isActive ? 'text-ui-bright' : 'text-ui-primary'}`}>
                         {otherUser?.username || 'Unknown'}
                       </span>
                       {isPendingConv && (
-                        <span className="text-[9px] px-1.5 py-0.5 rounded-full flex-shrink-0" style={{ background: 'rgba(251,191,36,0.1)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.2)' }}>
+                        <span className="text-[9px] px-1.5 py-0.5 rounded-full flex-shrink-0" style={{ background: 'var(--color-ui-warning-bg)', color: 'var(--color-ui-warning)', border: '1px solid var(--color-ui-warning-border)' }}>
                           {conv.createdBy === user?.id ? 'sent' : 'request'}
                         </span>
                       )}
@@ -845,13 +870,15 @@ export default function Chat() {
             {/* Header */}
             <header className="flex items-center justify-between px-4 py-3 flex-shrink-0" style={{ background: 'var(--color-ui-surface)', borderBottom: '1px solid var(--color-ui-border2)' }}>
               <div className="flex items-center gap-3">
-                <button onClick={() => setIsSidebarOpen(true)} className="md:hidden p-1.5 rounded-md text-ui-muted hover:text-ui-subtle transition-colors mr-1" aria-label="Open sidebar">
-                  <Menu size={18} aria-hidden />
+                <button onClick={() => setIsSidebarOpen(true)} className="md:hidden min-w-[44px] min-h-[44px] flex items-center justify-center -ml-2 rounded-md text-ui-muted hover:text-ui-subtle transition-colors" aria-label="Open sidebar">
+                  <Menu size={20} aria-hidden />
                 </button>
-                <div className="relative">
-                  {otherParticipant?.user && <Avatar name={otherParticipant.user.username} />}
-                  {otherParticipant?.user && onlineUsers[otherParticipant.user.id] && <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-green-500 border-2 border-[var(--color-ui-surface)]" aria-hidden />}
-                </div>
+                {otherParticipant?.user && (
+                  <Avatar 
+                    name={otherParticipant.user.username} 
+                    isOnline={!!onlineUsers[otherParticipant.user.id]} 
+                  />
+                )}
                 <div className="min-w-0">
                   <h1 className="text-sm font-semibold text-ui-bright truncate">{otherParticipant?.user.username}</h1>
                   <div className="flex items-center gap-1 text-ui-muted">
@@ -878,7 +905,7 @@ export default function Chat() {
                     <button
                       role="menuitem"
                       onClick={() => { setIsSettingsOpen(false); if (otherParticipant) setBlockConfirmUser({ id: otherParticipant.user.id, username: otherParticipant.user.username }); }}
-                      className="w-full flex items-center gap-2.5 px-4 py-3 text-sm text-red-400 hover:bg-red-500/8 transition-colors"
+                      className="w-full flex items-center gap-2.5 px-4 py-3 text-sm text-[var(--color-ui-danger)] hover:bg-[var(--color-ui-danger-bg)] transition-colors"
                     >
                       <Ban size={14} aria-hidden /> Block {otherParticipant?.user.username}
                     </button>
@@ -919,11 +946,11 @@ export default function Chat() {
                       {hoveredMessageId === msg.id && (
                          <div className={`absolute -top-11 ${isMine ? 'right-4' : 'left-4'} flex bg-ui-surface border border-ui-border rounded-full shadow-lg p-1 z-10 animate-fade-in gap-1`}>
                             {EMOJIS.map(e => (
-                               <button key={e} onClick={() => handleReact(msg.id, e)} className="hover:bg-ui-elevated rounded-full p-1.5 transition-colors text-lg" aria-label={`React with ${e}`}>{e}</button>
+                               <button key={e} onClick={() => handleReact(msg.id, e)} className="hover:bg-ui-elevated rounded-full min-w-[44px] min-h-[44px] flex items-center justify-center transition-colors text-lg" aria-label={`React with ${e}`}>{e}</button>
                             ))}
                             <div className="w-px h-6 bg-ui-border mx-1 self-center" aria-hidden />
-                            <button onClick={() => setReplyingToMessage(msg)} className="hover:bg-ui-elevated rounded-full p-1.5 transition-colors text-ui-muted hover:text-ui-primary" aria-label="Reply to message">
-                              <Reply size={16} />
+                            <button onClick={() => setReplyingToMessage(msg)} className="hover:bg-ui-elevated rounded-full min-w-[44px] min-h-[44px] flex items-center justify-center transition-colors text-ui-muted hover:text-ui-primary" aria-label="Reply to message">
+                              <Reply size={18} aria-hidden />
                             </button>
                          </div>
                       )}
@@ -991,8 +1018,8 @@ export default function Chat() {
                       })()}
                     </span>
                   </div>
-                  <button onClick={() => setReplyingToMessage(null)} className="p-1 text-ui-muted hover:text-ui-primary rounded-md transition-colors mr-1">
-                    <X size={16} />
+                  <button onClick={() => setReplyingToMessage(null)} aria-label="Cancel reply" className="min-w-[44px] min-h-[44px] flex items-center justify-center text-ui-muted hover:text-ui-primary rounded-md transition-colors mr-1">
+                    <X size={18} aria-hidden />
                   </button>
                 </div>
               )}
@@ -1014,7 +1041,7 @@ export default function Chat() {
                     <span className="text-ui-bright font-medium">{otherParticipant?.user.username}</span> wants to start a conversation.
                   </p>
                   <div className="flex gap-3">
-                    <button onClick={handleRejectRequest} className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-sm font-medium text-red-400 hover:bg-red-500/8 transition-colors" style={{ border: '1px solid rgba(239,68,68,0.2)' }}>
+                    <button onClick={handleRejectRequest} className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-sm font-medium text-[var(--color-ui-danger)] hover:bg-[var(--color-ui-danger-bg)] transition-colors" style={{ border: '1px solid var(--color-ui-danger-border)' }}>
                       <UserX size={14} aria-hidden /> Decline
                     </button>
                     <button onClick={handleAcceptRequest} className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-sm font-medium text-white bg-accent-600 hover:bg-accent-500 transition-colors">
@@ -1024,18 +1051,18 @@ export default function Chat() {
                 </div>
               ) : isPending && isInitiator ? (
                 <div className="flex items-center justify-center gap-2 py-2">
-                  <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" aria-hidden />
+                  <span className="w-2 h-2 rounded-full bg-[var(--color-ui-warning)] animate-pulse" aria-hidden />
                   <span className="text-sm text-ui-muted">Waiting for {otherParticipant?.user.username} to accept…</span>
                 </div>
               ) : isRecording ? (
                 <div className="flex items-center justify-between gap-3 px-4 py-2.5 rounded-xl text-sm transition-all" style={{ background: 'var(--color-ui-surface)', border: '1px solid var(--color-accent-500)' }}>
                   <div className="flex items-center gap-3">
-                    <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse" aria-hidden />
+                    <span className="w-2.5 h-2.5 rounded-full bg-[var(--color-ui-danger)] animate-pulse" aria-hidden />
                     <span className="text-ui-bright font-medium">{formatTime(recordingTime)}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <button onClick={cancelRecording} className="p-2 rounded-full text-ui-muted hover:text-red-400 hover:bg-red-500/10 transition-colors" aria-label="Cancel recording">
-                      <Trash2 size={16} aria-hidden />
+                    <button onClick={cancelRecording} className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full text-ui-muted hover:text-[var(--color-ui-danger)] hover:bg-[var(--color-ui-danger-bg)] transition-colors" aria-label="Cancel recording">
+                      <Trash2 size={18} aria-hidden />
                     </button>
                     <button onClick={sendRecording} className="w-10 h-10 flex items-center justify-center rounded-xl bg-accent-600 hover:bg-accent-500 text-white transition-colors" aria-label="Send recording">
                       <Send size={16} aria-hidden />
@@ -1056,9 +1083,9 @@ export default function Chat() {
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
                     aria-label="Attach image"
-                    className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-xl bg-ui-surface border border-ui-border text-ui-muted hover:text-ui-primary hover:border-ui-border2 transition-all active:scale-95"
+                    className="flex-shrink-0 w-[44px] h-[44px] flex items-center justify-center rounded-xl bg-ui-surface border border-ui-border text-ui-muted hover:text-ui-primary hover:border-ui-border2 transition-all active:scale-95"
                   >
-                    <ImageIcon size={18} aria-hidden />
+                    <ImageIcon size={20} aria-hidden />
                   </button>
                   <label htmlFor="message-input" className="sr-only">Type your message</label>
                   <input
@@ -1078,18 +1105,18 @@ export default function Chat() {
                     <button
                       type="submit"
                       aria-label="Send message"
-                      className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-xl bg-accent-600 hover:bg-accent-500 text-white transition-all active:scale-95"
+                      className="flex-shrink-0 w-[44px] h-[44px] flex items-center justify-center rounded-xl bg-accent-600 hover:bg-accent-500 text-white transition-all active:scale-95"
                     >
-                      <Send size={16} aria-hidden />
+                      <Send size={18} aria-hidden />
                     </button>
                   ) : (
                     <button
                       type="button"
                       onClick={startRecording}
                       aria-label="Record voice note"
-                      className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-xl bg-ui-surface border border-ui-border text-ui-muted hover:text-ui-primary hover:border-ui-border2 transition-all active:scale-95"
+                      className="flex-shrink-0 w-[44px] h-[44px] flex items-center justify-center rounded-xl bg-ui-surface border border-ui-border text-ui-muted hover:text-ui-primary hover:border-ui-border2 transition-all active:scale-95"
                     >
-                      <Mic size={18} aria-hidden />
+                      <Mic size={20} aria-hidden />
                     </button>
                   )}
                 </form>
@@ -1099,8 +1126,8 @@ export default function Chat() {
         ) : (
           /* Empty state */
           <div className="flex-1 flex flex-col items-center justify-center p-8 text-center relative">
-            <button onClick={() => setIsSidebarOpen(true)} className="md:hidden absolute top-4 left-4 p-1.5 rounded-md text-ui-muted hover:text-ui-subtle transition-colors" aria-label="Open sidebar">
-              <Menu size={18} aria-hidden />
+            <button onClick={() => setIsSidebarOpen(true)} className="md:hidden absolute top-4 left-4 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-md text-ui-muted hover:text-ui-subtle transition-colors" aria-label="Open sidebar">
+              <Menu size={20} aria-hidden />
             </button>
             <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-5 bg-ui-surface border border-ui-border">
               <Lock size={24} className="text-accent-500" aria-hidden />
@@ -1130,8 +1157,8 @@ export default function Chat() {
         <div className="rounded-t-2xl sm:rounded-2xl w-full sm:max-w-md shadow-2xl overflow-hidden animate-slide-up bg-ui-surface border border-ui-border">
           <div className="flex items-center justify-between px-5 py-4 border-b border-ui-border2">
             <h2 id="new-chat-title" className="text-base font-semibold text-ui-bright">New conversation</h2>
-            <button onClick={() => setIsNewChatOpen(false)} aria-label="Close" className="p-1 rounded-md text-ui-muted hover:text-ui-subtle transition-colors">
-              <X size={18} aria-hidden />
+            <button onClick={() => setIsNewChatOpen(false)} aria-label="Close" className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-md text-ui-muted hover:text-ui-subtle transition-colors">
+              <X size={20} aria-hidden />
             </button>
           </div>
           <div className="p-4 border-b border-ui-border2">

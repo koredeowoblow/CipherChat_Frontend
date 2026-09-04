@@ -35,7 +35,7 @@ export default function Register() {
       return;
     }
     if (privateKeyPassword.length < 8) {
-      setError('Decryption password must be at least 8 characters.');
+      setError('Your key password must be at least 8 characters.');
       setIsLoading(false);
       return;
     }
@@ -58,7 +58,7 @@ export default function Register() {
       setAuth(data.user, data.token);
       setShowDownloadPrompt(true);
     } catch (err: any) {
-      setError(err.response?.data?.error || err.message || 'Failed to create account. Please try again.');
+      setError(err.response?.data?.error || err.message || 'We couldn\'t create your account. Please try again.');
       setPassword('');
       setPrivateKeyPassword('');
     } finally {
@@ -94,12 +94,12 @@ export default function Register() {
           <p className="text-ui-subtle text-sm leading-relaxed mb-6">
             Your account was created successfully! To log into this account on any other device in the future, you <b>must</b> have this key file.
           </p>
-          <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-4 mb-8 text-left">
+          <div className="rounded-lg p-4 mb-8 text-left" style={{ background: 'var(--color-ui-warning-bg)', border: '1px solid var(--color-ui-warning-border)' }}>
             <div className="flex items-center gap-2 mb-2">
-              <AlertTriangle size={16} className="text-amber-400" />
-              <span className="text-amber-400 font-semibold text-sm">Critical Backup</span>
+              <AlertTriangle size={16} style={{ color: 'var(--color-ui-warning)' }} />
+              <span className="font-semibold text-sm" style={{ color: 'var(--color-ui-warning)' }}>Critical Backup</span>
             </div>
-            <p className="text-amber-200/70 text-xs leading-relaxed">
+            <p className="text-ui-muted text-xs leading-relaxed">
               If you lose this file and clear your browser cache, you will permanently lose access to all your messages. We cannot recover it for you.
             </p>
           </div>
@@ -142,13 +142,13 @@ export default function Register() {
         </div>
 
         {/* Key warning callout */}
-        <div className="bg-amber-500/8 border border-amber-500/20 rounded-xl p-5">
+        <div className="rounded-xl p-5" style={{ background: 'var(--color-ui-warning-bg)', border: '1px solid var(--color-ui-warning-border)' }}>
           <div className="flex items-center gap-2 mb-2">
-            <AlertTriangle size={15} className="text-amber-400 flex-shrink-0" aria-hidden="true" />
-            <span className="text-amber-400 text-sm font-semibold">Save your decryption password</span>
+            <AlertTriangle size={15} style={{ color: 'var(--color-ui-warning)' }} className="flex-shrink-0" aria-hidden="true" />
+            <span className="text-sm font-semibold" style={{ color: 'var(--color-ui-warning)' }}>Save your key password</span>
           </div>
-          <p className="text-amber-200/60 text-xs leading-relaxed">
-            We cannot recover your messages if you forget your local decryption password. Write it somewhere safe before you proceed.
+          <p className="text-ui-muted text-xs leading-relaxed">
+            We cannot recover your messages if you forget your local key password. Write it down somewhere safe before you proceed.
           </p>
         </div>
       </div>
@@ -184,18 +184,18 @@ export default function Register() {
             className="mb-6 overflow-hidden transition-all duration-200"
             style={{ maxHeight: error ? '80px' : '0', opacity: error ? 1 : 0 }}
           >
-            <div className="px-4 py-3 rounded-lg text-sm" style={{ background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.18)', color: '#f87171' }}>
+            <div className="px-4 py-3 rounded-lg text-sm" style={{ background: 'var(--color-ui-danger-bg)', border: '1px solid var(--color-ui-danger-border)', color: 'var(--color-ui-danger)' }}>
               {error}
             </div>
           </div>
 
           {/* Mobile warning */}
-          <div className="lg:hidden mb-6 bg-amber-500/8 border border-amber-500/20 rounded-lg p-4">
+          <div className="lg:hidden mb-6 rounded-lg p-4" style={{ background: 'var(--color-ui-warning-bg)', border: '1px solid var(--color-ui-warning-border)' }}>
             <div className="flex items-center gap-2 mb-1">
-              <AlertTriangle size={13} className="text-amber-400" aria-hidden="true" />
-              <span className="text-amber-400 text-xs font-semibold">Save your decryption password</span>
+              <AlertTriangle size={13} style={{ color: 'var(--color-ui-warning)' }} aria-hidden="true" />
+              <span className="text-xs font-semibold" style={{ color: 'var(--color-ui-warning)' }}>Save your key password</span>
             </div>
-            <p className="text-amber-200/50 text-xs">Write it down — we can't recover it for you.</p>
+            <p className="text-ui-muted text-xs">Write it down — we can't recover it for you.</p>
           </div>
 
           <form onSubmit={handleRegister} className="space-y-4" noValidate>
@@ -268,13 +268,13 @@ export default function Register() {
             {/* Decryption password */}
             <div>
               <label htmlFor="reg-decryption" className="block text-xs font-medium text-ui-subtle mb-1.5">
-                Decryption password
+                Key password
               </label>
               <div className="relative">
                 <input
                   id="reg-decryption"
                   type={showKeyPwd ? 'text' : 'password'}
-                  placeholder="Protects your local private key"
+                  placeholder="Protects your secure local key"
                   autoComplete="off"
                   className="input-field pr-10"
                   value={privateKeyPassword}
@@ -286,7 +286,7 @@ export default function Register() {
                 <button
                   type="button"
                   onClick={() => setShowKeyPwd(v => !v)}
-                  aria-label={showKeyPwd ? 'Hide decryption password' : 'Show decryption password'}
+                  aria-label={showKeyPwd ? 'Hide key password' : 'Show key password'}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-ui-muted hover:text-ui-subtle transition-colors"
                 >
                   {showKeyPwd ? <EyeOff size={16} /> : <Eye size={16} />}

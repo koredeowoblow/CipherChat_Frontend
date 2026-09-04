@@ -28,6 +28,13 @@
     --color-ui-subtle: #6b7280;
     --color-ui-primary: #374151;
     --color-ui-bright: #111827;
+    --color-ui-danger: #ef4444;
+    --color-ui-danger-bg: rgba(239, 68, 68, 0.08);
+    --color-ui-danger-border: rgba(239, 68, 68, 0.2);
+    --color-ui-warning: #f59e0b;
+    --color-ui-warning-bg: rgba(245, 158, 11, 0.1);
+    --color-ui-warning-border: rgba(245, 158, 11, 0.2);
+    --color-ui-success: #10b981;
   }
 
   .dark {
@@ -41,6 +48,13 @@
     --color-ui-subtle: #8890b0;
     --color-ui-primary: #c8ccee;
     --color-ui-bright: #edf0ff;
+    --color-ui-danger: #f87171;
+    --color-ui-danger-bg: rgba(248, 113, 113, 0.1);
+    --color-ui-danger-border: rgba(248, 113, 113, 0.2);
+    --color-ui-warning: #fbbf24;
+    --color-ui-warning-bg: rgba(251, 191, 36, 0.1);
+    --color-ui-warning-border: rgba(251, 191, 36, 0.2);
+    --color-ui-success: #10b981;
   }
 
   *, *::before, *::after {
@@ -143,6 +157,14 @@
   @keyframes msgEnter {
     from { opacity: 0; transform: translateY(4px); }
     to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none; /* Chrome, Safari and Opera */
   }
 }
 

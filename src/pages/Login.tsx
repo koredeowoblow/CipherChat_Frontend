@@ -37,10 +37,10 @@ export default function Login() {
           setHasPrivateKey(true);
           setError('');
         } else {
-          setError('Invalid key file format.');
+          setError('That doesn\'t look like a valid key file. Please ensure it\'s the .json file you exported.');
         }
       } catch {
-        setError('Failed to read key file.');
+        setError('We couldn\'t read that key file. Please try downloading it again.');
       }
     };
     reader.readAsText(file);
@@ -57,7 +57,7 @@ export default function Login() {
 
       const storedEncryptedKeyStr = localStorage.getItem('encryptedPrivateKey');
       if (!storedEncryptedKeyStr) {
-        throw new Error('Private key not found on this device. Please register again or import your key.');
+        throw new Error('Your private key is missing on this device. Please import your key file or register again.');
       }
 
       const storedEncryptedKey = JSON.parse(storedEncryptedKeyStr);
@@ -68,7 +68,7 @@ export default function Login() {
       setAuth(data.user, data.token);
       navigate('/');
     } catch (err: any) {
-      setError(err.response?.data?.error || err.message || 'Incorrect credentials or decryption password.');
+      setError(err.response?.data?.error || err.message || "We couldn't sign you in. Please check your passwords and try again.");
       // Clear sensitive fields on failure — never re-use a failed password
       setPassword('');
       setPrivateKeyPassword('');
@@ -99,9 +99,9 @@ export default function Login() {
 
         <div className="space-y-5">
           {[
-            { label: 'End-to-end encrypted', desc: 'X25519 + XSalsa20-Poly1305' },
-            { label: 'Zero-knowledge server', desc: 'We store ciphertext, never plaintext' },
-            { label: 'Keys stay on device', desc: 'Your private key never leaves your browser' },
+            { label: 'End-to-end encrypted', desc: 'State-of-the-art cryptography secures every message' },
+            { label: 'Zero-knowledge server', desc: 'We only store encrypted data, never your actual messages' },
+            { label: 'Keys stay on device', desc: 'Your private key is securely stored in your browser' },
           ].map(f => (
             <div key={f.label} className="flex items-start gap-3">
               <ShieldCheck size={16} className="text-accent-500 mt-0.5 flex-shrink-0" aria-hidden="true" />
@@ -145,7 +145,7 @@ export default function Login() {
             className="mb-6 overflow-hidden transition-all duration-200"
             style={{ maxHeight: error ? '80px' : '0', opacity: error ? 1 : 0 }}
           >
-            <div className="px-4 py-3 rounded-lg text-sm" style={{ background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.18)', color: '#f87171' }}>
+            <div className="px-4 py-3 rounded-lg text-sm" style={{ background: 'var(--color-ui-danger-bg)', border: '1px solid var(--color-ui-danger-border)', color: 'var(--color-ui-danger)' }}>
               {error}
             </div>
           </div>
@@ -212,8 +212,8 @@ export default function Login() {
             ) : (
               <div className="pt-2">
                 <label htmlFor="login-decryption" className="block text-xs font-medium text-ui-subtle mb-1.5">
-                  Decryption password
-                  <span className="ml-2 font-normal text-ui-muted">(unlocks your local private key)</span>
+                  Key password
+                  <span className="ml-2 font-normal text-ui-muted">(unlocks your secure local key)</span>
                 </label>
                 <div className="relative">
                   <input
