@@ -290,21 +290,21 @@ export default function Chat() {
               const conv = conversationsRef.current.find(c => c.id === payload.conversationId);
               const senderName = conv?.participants.find((p: any) => p.user?.id === payload.senderId)?.user?.username || 'Someone';
               
-              if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.ready.then(registration => {
-                  registration.showNotification(`New message from ${senderName}`, {
-                    body: 'You have a new encrypted message.'
-                  });
-                }).catch(() => {
-                  // Fallback for environments without active SW
-                  new Notification(`New message from ${senderName}`, {
-                    body: 'You have a new encrypted message.'
-                  });
-                });
-              } else {
+              try {
+                // This works on Desktop browsers
                 new Notification(`New message from ${senderName}`, {
                   body: 'You have a new encrypted message.'
                 });
+              } catch (e) {
+                // Mobile browsers (Android Chrome) throw an error for 'new Notification'
+                // and require using the Service Worker registration instead.
+                if ('serviceWorker' in navigator) {
+                  navigator.serviceWorker.ready.then(registration => {
+                    registration.showNotification(`New message from ${senderName}`, {
+                      body: 'You have a new encrypted message.'
+                    });
+                  });
+                }
               }
             }
           }
