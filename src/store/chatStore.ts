@@ -37,6 +37,7 @@ interface ChatState {
   activeConversationId: string | null;
   typingUsers: Record<string, string[]>; // conversationId -> [userId]
   onlineUsers: Record<string, boolean>; // userId -> isOnline
+  unreadCounts: Record<string, number>; // conversationId -> count
   setConversations: (conversations: Conversation[]) => void;
   addConversation: (conversation: Conversation) => void;
   removeConversation: (id: string) => void;
@@ -48,6 +49,8 @@ interface ChatState {
   updateMessagePlaintext: (conversationId: string, messageId: string, plaintext: string) => void;
   setTyping: (conversationId: string, userId: string, isTyping: boolean) => void;
   setOnlineStatus: (userId: string, isOnline: boolean) => void;
+  incrementUnreadCount: (conversationId: string) => void;
+  clearUnreadCount: (conversationId: string) => void;
 }
 
 const useChatStore = create<ChatState>((set) => ({
@@ -56,6 +59,7 @@ const useChatStore = create<ChatState>((set) => ({
   activeConversationId: null,
   typingUsers: {},
   onlineUsers: {},
+  unreadCounts: {},
 
   setConversations: (conversations) => set({ conversations }),
   
@@ -134,6 +138,20 @@ const useChatStore = create<ChatState>((set) => ({
 
   setOnlineStatus: (userId, isOnline) => set((state) => ({
     onlineUsers: { ...state.onlineUsers, [userId]: isOnline }
+  })),
+
+  incrementUnreadCount: (conversationId) => set((state) => ({
+    unreadCounts: {
+      ...state.unreadCounts,
+      [conversationId]: (state.unreadCounts[conversationId] || 0) + 1
+    }
+  })),
+
+  clearUnreadCount: (conversationId) => set((state) => ({
+    unreadCounts: {
+      ...state.unreadCounts,
+      [conversationId]: 0
+    }
   })),
 }));
 

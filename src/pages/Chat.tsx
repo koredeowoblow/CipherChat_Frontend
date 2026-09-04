@@ -73,6 +73,7 @@ export default function Chat() {
   const logout = useAuthStore(s => s.logout);
   const {
     conversations, messages, activeConversationId, typingUsers,
+    unreadCounts, clearUnreadCount,
     setConversations, setActiveConversation, setMessages,
     addMessage, updateMessagePlaintext, setTyping,
     removeConversation, updateConversation,
@@ -248,6 +249,8 @@ export default function Chat() {
   useEffect(() => {
     if (!activeConversationId) return;
 
+    clearUnreadCount(activeConversationId);
+
     // SKIP fetch if we already have cached messages for this conversation
     const cached = messagesRef.current[activeConversationId];
     if (cached && cached.length > 0) {
@@ -281,6 +284,8 @@ export default function Chat() {
         // Notify if it's from someone else and we're not actively looking at it
         if (payload.senderId !== userRef.current?.id) {
           if (document.hidden || activeConversationIdRef.current !== payload.conversationId) {
+            useChatStore.getState().incrementUnreadCount(payload.conversationId);
+            
             if ('Notification' in window && Notification.permission === 'granted') {
               const conv = conversationsRef.current.find(c => c.id === payload.conversationId);
               const senderName = conv?.participants.find((p: any) => p.user?.id === payload.senderId)?.user?.username || 'Someone';
@@ -900,6 +905,11 @@ export default function Chat() {
                       {convTyping ? 'typing…' : new Date(conv.lastMessageAt).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                     </p>
                   </div>
+                  {unreadCounts[conv.id] > 0 && (
+                    <div className="flex-shrink-0 min-w-[20px] h-[20px] rounded-full bg-accent-500 text-white flex items-center justify-center text-[10px] font-bold px-1.5 shadow-sm">
+                      {unreadCounts[conv.id] > 99 ? '99+' : unreadCounts[conv.id]}
+                    </div>
+                  )}
                 </button>
               );
             })
