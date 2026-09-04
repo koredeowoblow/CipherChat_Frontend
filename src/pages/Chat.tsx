@@ -273,7 +273,7 @@ export default function Chat() {
       }
     });
 
-    return unsubscribe;
+    return () => { unsubscribe(); };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [subscribe]); // subscribe is stable; other deps read through refs
 
