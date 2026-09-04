@@ -908,9 +908,9 @@ export default function Chat() {
                          </div>
                       )}
                       
-                      <div className="flex flex-col relative">
+                      <div className="flex flex-col relative max-w-[85%] md:max-w-[75%] min-w-0">
                         <div
-                          className={`max-w-[70%] md:max-w-full px-4 py-2.5 text-sm leading-relaxed break-words relative ${
+                          className={`px-4 py-2.5 text-sm leading-relaxed break-words [word-break:break-word] relative ${
                             isMine 
                               ? 'bg-accent-500 text-white rounded-[18px_18px_4px_18px]' 
                               : 'bg-ui-elevated text-ui-primary border border-ui-border rounded-[18px_18px_18px_4px]'
