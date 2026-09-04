@@ -5,6 +5,7 @@ import useChatStore from '../store/chatStore';
 import useKeyStore from '../store/keyStore';
 import cryptoService from '../services/cryptoService';
 import api from '../services/api';
+import ThemeToggle from '../components/ThemeToggle';
 import {
   Send, Search, LogOut, MessageSquare, Lock, Plus, X,
   Ban, UserCheck, UserX, ChevronDown, Menu, AlertCircle,
@@ -46,8 +47,8 @@ function BlockConfirmModal({ username, onConfirm, onCancel }: { username: string
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 animate-fade-in" role="dialog" aria-modal aria-labelledby="block-title">
       <div className="card rounded-xl w-full max-w-sm mx-4 shadow-2xl animate-slide-up p-6">
-        <h2 id="block-title" className="text-base font-semibold text-[#edf0ff] mb-2">Block {username}?</h2>
-        <p className="text-sm text-[#8890b0] mb-6">
+        <h2 id="block-title" className="text-base font-semibold text-ui-bright mb-2">Block {username}?</h2>
+        <p className="text-sm text-ui-subtle mb-6">
           {username} won't be able to send you messages or chat requests. You can unblock them later.
         </p>
         <div className="flex gap-3">
@@ -411,7 +412,7 @@ export default function Chat() {
   // ─── Render ───────────────────────────────────────────────
   return (
     <>
-    <div className="flex h-screen overflow-hidden" style={{ background: '#0b0d14', color: '#c8ccee' }}>
+    <div className="flex h-screen overflow-hidden bg-ui-base text-ui-primary">
 
       {/* Mobile overlay */}
       {isSidebarOpen && (
@@ -420,45 +421,45 @@ export default function Chat() {
 
       {/* ── SIDEBAR ─────────────────────────────────────────── */}
       <aside
-        className={`w-[280px] flex-shrink-0 flex flex-col z-30 transition-transform duration-300 fixed md:relative inset-y-0 left-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}
-        style={{ background: '#0e1019', borderRight: '1px solid #1c1f32' }}
+        className={`w-[280px] flex-shrink-0 flex flex-col z-30 transition-transform duration-300 fixed md:relative inset-y-0 left-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'} bg-ui-surface border-r border-ui-border2`}
         aria-label="Conversations"
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-4" style={{ borderBottom: '1px solid #1c1f32' }}>
+        <div className="flex items-center justify-between px-4 py-4 border-b border-ui-border2">
           <div className="flex items-center gap-2.5">
             <div className="w-7 h-7 rounded-lg bg-accent-500 flex items-center justify-center flex-shrink-0" aria-hidden>
               <Lock size={13} className="text-white" />
             </div>
-            <span className="text-[#edf0ff] font-semibold text-sm tracking-tight">CipherChat</span>
+            <span className="text-ui-bright font-semibold text-sm tracking-tight">CipherChat</span>
           </div>
           <div className="flex items-center gap-1">
-            <button onClick={handleExportKey} aria-label="Export key" title="Export key" className="p-1.5 rounded-lg text-[#3a3f5c] hover:text-[#8890b0] hover:bg-[#171b2d] transition-colors">
+            <ThemeToggle />
+            <button onClick={handleExportKey} aria-label="Export key" title="Export key" className="p-1.5 rounded-lg text-ui-muted hover:text-ui-subtle hover:bg-ui-elevated transition-colors">
               <Download size={16} aria-hidden />
             </button>
-            <button onClick={logout} aria-label="Log out" title="Log out" className="p-1.5 rounded-lg text-[#3a3f5c] hover:text-[#8890b0] hover:bg-[#171b2d] transition-colors">
+            <button onClick={logout} aria-label="Log out" title="Log out" className="p-1.5 rounded-lg text-ui-muted hover:text-ui-subtle hover:bg-ui-elevated transition-colors">
               <LogOut size={16} aria-hidden />
             </button>
           </div>
         </div>
 
         {/* Current user strip */}
-        <div className="flex items-center gap-2.5 px-4 py-3" style={{ borderBottom: '1px solid #1c1f32' }}>
+        <div className="flex items-center gap-2.5 px-4 py-3 border-b border-ui-border2">
           {user && <Avatar name={user.username} size="sm" />}
           <div className="min-w-0">
-            <p className="text-[#edf0ff] text-sm font-medium truncate">{user?.username}</p>
+            <p className="text-ui-bright text-sm font-medium truncate">{user?.username}</p>
             <div className="flex items-center gap-1.5">
               <span className={`w-1.5 h-1.5 rounded-full ${isConnected ? 'bg-green-500' : 'bg-[#3a3f5c]'}`} aria-hidden />
-              <span className="text-[11px] text-[#3a3f5c]">{isConnected ? 'Connected' : 'Reconnecting…'}</span>
+              <span className="text-[11px] text-ui-muted">{isConnected ? 'Connected' : 'Reconnecting…'}</span>
             </div>
           </div>
         </div>
 
         {/* Search + new */}
-        <div className="flex items-center gap-2 px-3 py-3" style={{ borderBottom: '1px solid #1c1f32' }}>
+        <div className="flex items-center gap-2 px-3 py-3 border-b border-ui-border2">
           <div className="relative flex-1 min-w-0">
             <label htmlFor="conv-search" className="sr-only">Search conversations</label>
-            <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[#3a3f5c] pointer-events-none" aria-hidden />
+            <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-ui-muted pointer-events-none" aria-hidden />
             <input
               id="conv-search" type="search" placeholder="Search…"
               className="w-full pl-7 pr-3 py-1.5 text-sm rounded-md transition-all outline-none"
@@ -487,7 +488,7 @@ export default function Chat() {
           ) : filteredConversations.length === 0 ? (
             <div className="flex flex-col items-center py-12 px-6 text-center gap-3">
               <MessageSquare size={28} className="text-[#252840]" aria-hidden />
-              <p className="text-sm text-[#3a3f5c]">{searchQuery ? 'No matches' : 'No conversations yet'}</p>
+              <p className="text-sm text-ui-muted">{searchQuery ? 'No matches' : 'No conversations yet'}</p>
               {!searchQuery && (
                 <button onClick={() => setIsNewChatOpen(true)} className="text-xs text-accent-400 hover:text-accent-300 transition-colors">
                   Start your first chat →
@@ -548,13 +549,13 @@ export default function Chat() {
             {/* Header */}
             <header className="flex items-center justify-between px-4 py-3 flex-shrink-0" style={{ background: '#0e1019', borderBottom: '1px solid #1c1f32' }}>
               <div className="flex items-center gap-3">
-                <button onClick={() => setIsSidebarOpen(true)} className="md:hidden p-1.5 rounded-md text-[#3a3f5c] hover:text-[#8890b0] transition-colors mr-1" aria-label="Open sidebar">
+                <button onClick={() => setIsSidebarOpen(true)} className="md:hidden p-1.5 rounded-md text-ui-muted hover:text-ui-subtle transition-colors mr-1" aria-label="Open sidebar">
                   <Menu size={18} aria-hidden />
                 </button>
                 {otherParticipant?.user && <Avatar name={otherParticipant.user.username} />}
                 <div className="min-w-0">
-                  <h1 className="text-sm font-semibold text-[#edf0ff] truncate">{otherParticipant?.user.username}</h1>
-                  <div className="flex items-center gap-1" style={{ color: '#3a3f5c' }}>
+                  <h1 className="text-sm font-semibold text-ui-bright truncate">{otherParticipant?.user.username}</h1>
+                  <div className="flex items-center gap-1 text-ui-muted">
                     <ShieldCheck size={10} aria-hidden />
                     <span className="text-[10px]">End-to-end encrypted</span>
                   </div>
@@ -568,13 +569,13 @@ export default function Chat() {
                   aria-label="Conversation settings"
                   aria-haspopup="menu"
                   aria-expanded={isSettingsOpen}
-                  className="flex items-center gap-1 px-2 py-1.5 rounded-md text-[#3a3f5c] hover:text-[#8890b0] hover:bg-[#171b2d] transition-colors"
+                  className="flex items-center gap-1 px-2 py-1.5 rounded-md text-ui-muted hover:text-ui-subtle hover:bg-ui-elevated transition-colors"
                 >
                   <Settings size={15} aria-hidden />
                   <ChevronDown size={12} className={`transition-transform duration-200 ${isSettingsOpen ? 'rotate-180' : ''}`} aria-hidden />
                 </button>
                 {isSettingsOpen && (
-                  <div role="menu" className="absolute right-0 top-full mt-1.5 w-48 rounded-lg shadow-xl animate-fade-in z-50 overflow-hidden" style={{ background: '#111320', border: '1px solid #252840' }}>
+                  <div role="menu" className="absolute right-0 top-full mt-1.5 w-48 rounded-lg shadow-xl animate-fade-in z-50 overflow-hidden bg-ui-surface border border-ui-border">
                     <button
                       role="menuitem"
                       onClick={() => { setIsSettingsOpen(false); if (otherParticipant) setBlockConfirmUser({ id: otherParticipant.user.id, username: otherParticipant.user.username }); }}
@@ -592,7 +593,7 @@ export default function Chat() {
               {messageError ? (
                 <div className="flex flex-col items-center justify-center h-full gap-3">
                   <AlertCircle className="text-red-400" size={32} aria-hidden />
-                  <p className="text-sm text-[#8890b0]">{messageError}</p>
+                  <p className="text-sm text-ui-subtle">{messageError}</p>
                   <button
                     onClick={() => { setMessageError(''); setActiveConversation(activeConversationId); }}
                     className="text-sm text-accent-400 hover:text-accent-300 transition-colors"
@@ -638,7 +639,7 @@ export default function Chat() {
             </div>
 
             {/* Input area */}
-            <div className="flex-shrink-0 px-4 md:px-8 py-4" style={{ borderTop: '1px solid #1c1f32' }}>
+            <div className="flex-shrink-0 px-4 md:px-8 py-4 border-t border-ui-border2">
               {isTypingNow && (
                 <div className="flex items-center gap-2 mb-2.5" aria-live="polite">
                   <div className="flex gap-0.5" aria-hidden>
@@ -646,14 +647,14 @@ export default function Chat() {
                       <span key={d} className="w-1.5 h-1.5 rounded-full bg-accent-500 animate-bounce" style={{ animationDelay: `${d}ms` }} />
                     ))}
                   </div>
-                  <span className="text-[11px] text-[#3a3f5c]">{otherParticipant?.user.username} is typing…</span>
+                  <span className="text-[11px] text-ui-muted">{otherParticipant?.user.username} is typing…</span>
                 </div>
               )}
 
               {isPending && !isInitiator ? (
                 <div className="space-y-3">
-                  <p className="text-center text-sm text-[#8890b0]">
-                    <span className="text-[#edf0ff] font-medium">{otherParticipant?.user.username}</span> wants to start a conversation.
+                  <p className="text-center text-sm text-ui-subtle">
+                    <span className="text-ui-bright font-medium">{otherParticipant?.user.username}</span> wants to start a conversation.
                   </p>
                   <div className="flex gap-3">
                     <button onClick={handleRejectRequest} className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-sm font-medium text-red-400 hover:bg-red-500/8 transition-colors" style={{ border: '1px solid rgba(239,68,68,0.2)' }}>
@@ -667,7 +668,7 @@ export default function Chat() {
               ) : isPending && isInitiator ? (
                 <div className="flex items-center justify-center gap-2 py-2">
                   <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" aria-hidden />
-                  <span className="text-sm text-[#3a3f5c]">Waiting for {otherParticipant?.user.username} to accept…</span>
+                  <span className="text-sm text-ui-muted">Waiting for {otherParticipant?.user.username} to accept…</span>
                 </div>
               ) : (
                 <form onSubmit={handleSendMessage} className="flex gap-2" aria-label="Send a message">
@@ -700,14 +701,14 @@ export default function Chat() {
         ) : (
           /* Empty state */
           <div className="flex-1 flex flex-col items-center justify-center p-8 text-center relative">
-            <button onClick={() => setIsSidebarOpen(true)} className="md:hidden absolute top-4 left-4 p-1.5 rounded-md text-[#3a3f5c] hover:text-[#8890b0] transition-colors" aria-label="Open sidebar">
+            <button onClick={() => setIsSidebarOpen(true)} className="md:hidden absolute top-4 left-4 p-1.5 rounded-md text-ui-muted hover:text-ui-subtle transition-colors" aria-label="Open sidebar">
               <Menu size={18} aria-hidden />
             </button>
-            <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-5" style={{ background: '#111320', border: '1px solid #252840' }}>
+            <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-5 bg-ui-surface border border-ui-border">
               <Lock size={24} className="text-accent-500" aria-hidden />
             </div>
-            <h1 className="text-lg font-semibold text-[#edf0ff] mb-2">No conversation selected</h1>
-            <p className="text-sm text-[#3a3f5c] max-w-xs mb-6 leading-relaxed">
+            <h1 className="text-lg font-semibold text-ui-bright mb-2">No conversation selected</h1>
+            <p className="text-sm text-ui-muted max-w-xs mb-6 leading-relaxed">
               Pick a conversation from the sidebar, or start a new encrypted chat.
             </p>
             <button
@@ -728,17 +729,17 @@ export default function Chat() {
         role="dialog" aria-modal aria-labelledby="new-chat-title"
         onClick={e => { if (e.target === e.currentTarget) setIsNewChatOpen(false); }}
       >
-        <div className="rounded-t-2xl sm:rounded-2xl w-full sm:max-w-md shadow-2xl overflow-hidden animate-slide-up" style={{ background: '#111320', border: '1px solid #252840' }}>
-          <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: '1px solid #1c1f32' }}>
-            <h2 id="new-chat-title" className="text-base font-semibold text-[#edf0ff]">New conversation</h2>
-            <button onClick={() => setIsNewChatOpen(false)} aria-label="Close" className="p-1 rounded-md text-[#3a3f5c] hover:text-[#8890b0] transition-colors">
+        <div className="rounded-t-2xl sm:rounded-2xl w-full sm:max-w-md shadow-2xl overflow-hidden animate-slide-up bg-ui-surface border border-ui-border">
+          <div className="flex items-center justify-between px-5 py-4 border-b border-ui-border2">
+            <h2 id="new-chat-title" className="text-base font-semibold text-ui-bright">New conversation</h2>
+            <button onClick={() => setIsNewChatOpen(false)} aria-label="Close" className="p-1 rounded-md text-ui-muted hover:text-ui-subtle transition-colors">
               <X size={18} aria-hidden />
             </button>
           </div>
-          <div className="p-4" style={{ borderBottom: '1px solid #1c1f32' }}>
+          <div className="p-4 border-b border-ui-border2">
             <label htmlFor="user-search" className="sr-only">Search by username</label>
             <div className="relative">
-              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#3a3f5c] pointer-events-none" aria-hidden />
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-ui-muted pointer-events-none" aria-hidden />
               <input
                 id="user-search" type="search" placeholder="Search by username…"
                 className="w-full pl-9 pr-4 py-2 rounded-lg text-sm outline-none transition-all"
@@ -767,15 +768,15 @@ export default function Chat() {
                 >
                   <Avatar name={u.username} />
                   <div className="min-w-0">
-                    <p className="text-sm font-medium text-[#edf0ff] truncate">{u.username}</p>
-                    <p className="text-xs text-[#3a3f5c] capitalize">{u.status || 'offline'}</p>
+                    <p className="text-sm font-medium text-ui-bright truncate">{u.username}</p>
+                    <p className="text-xs text-ui-muted capitalize">{u.status || 'offline'}</p>
                   </div>
                 </button>
               ))
             ) : userSearchQuery ? (
-              <p className="text-center text-sm text-[#3a3f5c] py-10">No users found for "{userSearchQuery}"</p>
+              <p className="text-center text-sm text-ui-muted py-10">No users found for "{userSearchQuery}"</p>
             ) : (
-              <p className="text-center text-sm text-[#3a3f5c] py-10 px-4">Search for someone to start a private conversation.</p>
+              <p className="text-center text-sm text-ui-muted py-10 px-4">Search for someone to start a private conversation.</p>
             )}
           </div>
         </div>

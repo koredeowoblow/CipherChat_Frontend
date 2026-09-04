@@ -5,6 +5,7 @@ import api from '../services/api';
 import useAuthStore from '../store/authStore';
 import useKeyStore from '../store/keyStore';
 import cryptoService from '../services/cryptoService';
+import ThemeToggle from '../components/ThemeToggle';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -77,21 +78,21 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex bg-[#0b0d14]">
+    <div className="min-h-screen flex bg-ui-base">
       {/* ── Left panel — brand ── */}
-      <div className="hidden lg:flex flex-col justify-between w-[420px] flex-shrink-0 bg-[#0e1019] border-r border-[#1c1f32] p-12">
+      <div className="hidden lg:flex flex-col justify-between w-[420px] flex-shrink-0 bg-ui-surface dark:bg-ui-base/50 border-r border-ui-border2 p-12">
         <div>
           <div className="flex items-center gap-2.5 mb-16">
             <div className="w-8 h-8 rounded-lg bg-accent-500 flex items-center justify-center">
               <Lock size={16} className="text-white" aria-hidden="true" />
             </div>
-            <span className="text-[#edf0ff] font-semibold text-lg tracking-tight">CipherChat</span>
+            <span className="text-ui-bright font-semibold text-lg tracking-tight">CipherChat</span>
           </div>
 
-          <h1 className="text-3xl font-bold text-[#edf0ff] leading-snug mb-4">
+          <h1 className="text-3xl font-bold text-ui-bright leading-snug mb-4">
             Private by design.<br />Secure by default.
           </h1>
-          <p className="text-[#8890b0] text-sm leading-relaxed">
+          <p className="text-ui-subtle text-sm leading-relaxed">
             Your messages are encrypted on your device before they leave it. Not even the server can read them.
           </p>
         </div>
@@ -105,8 +106,8 @@ export default function Login() {
             <div key={f.label} className="flex items-start gap-3">
               <ShieldCheck size={16} className="text-accent-500 mt-0.5 flex-shrink-0" aria-hidden="true" />
               <div>
-                <p className="text-[#c8ccee] text-sm font-medium">{f.label}</p>
-                <p className="text-[#8890b0] text-xs mt-0.5">{f.desc}</p>
+                <p className="text-ui-primary text-sm font-medium">{f.label}</p>
+                <p className="text-ui-subtle text-xs mt-0.5">{f.desc}</p>
               </div>
             </div>
           ))}
@@ -114,7 +115,10 @@ export default function Login() {
       </div>
 
       {/* ── Right panel — form ── */}
-      <div className="flex-1 flex items-center justify-center p-6">
+      <div className="flex-1 flex items-center justify-center p-6 relative">
+        <div className="absolute top-6 right-6">
+          <ThemeToggle />
+        </div>
         <div className="w-full max-w-sm">
 
           {/* Mobile logo */}
@@ -122,11 +126,11 @@ export default function Login() {
             <div className="w-7 h-7 rounded-md bg-accent-500 flex items-center justify-center">
               <Lock size={14} className="text-white" aria-hidden="true" />
             </div>
-            <span className="text-[#edf0ff] font-semibold">CipherChat</span>
+            <span className="text-ui-bright font-semibold">CipherChat</span>
           </div>
 
-          <h2 className="text-2xl font-semibold text-[#edf0ff] mb-1">Sign in</h2>
-          <p className="text-sm text-[#8890b0] mb-8">
+          <h2 className="text-2xl font-semibold text-ui-bright mb-1">Sign in</h2>
+          <p className="text-sm text-ui-subtle mb-8">
             New here?{' '}
             <Link to="/register" className="text-accent-400 hover:text-accent-300 transition-colors">
               Create an account
@@ -149,7 +153,7 @@ export default function Login() {
           <form onSubmit={handleLogin} className="space-y-4" noValidate>
             {/* Email */}
             <div>
-              <label htmlFor="login-email" className="block text-xs font-medium text-[#8890b0] mb-1.5">Email</label>
+              <label htmlFor="login-email" className="block text-xs font-medium text-ui-subtle mb-1.5">Email</label>
               <input
                 id="login-email"
                 type="email"
@@ -164,7 +168,7 @@ export default function Login() {
 
             {/* Password */}
             <div>
-              <label htmlFor="login-password" className="block text-xs font-medium text-[#8890b0] mb-1.5">Account password</label>
+              <label htmlFor="login-password" className="block text-xs font-medium text-ui-subtle mb-1.5">Account password</label>
               <div className="relative">
                 <input
                   id="login-password"
@@ -180,7 +184,7 @@ export default function Login() {
                   type="button"
                   onClick={() => setShowPwd(v => !v)}
                   aria-label={showPwd ? 'Hide password' : 'Show password'}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#3a3f5c] hover:text-[#8890b0] transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-ui-muted hover:text-ui-subtle transition-colors"
                 >
                   {showPwd ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
@@ -190,11 +194,11 @@ export default function Login() {
             {/* Decryption password or Import Key */}
             {!hasPrivateKey ? (
               <div className="pt-2">
-                <div className="bg-[#171b2d] border border-[#252840] rounded-lg p-4 text-center">
+                <div className="bg-ui-elevated border border-ui-border rounded-lg p-4 text-center">
                   <ShieldCheck size={24} className="mx-auto text-accent-500 mb-2" />
-                  <h3 className="text-sm font-medium text-[#edf0ff] mb-1">Private Key Required</h3>
-                  <p className="text-xs text-[#8890b0] mb-3">You need to import your private key to log in on this device.</p>
-                  <label className="btn-secondary cursor-pointer block py-2 rounded-lg text-sm transition-colors hover:bg-[#252840]">
+                  <h3 className="text-sm font-medium text-ui-bright mb-1">Private Key Required</h3>
+                  <p className="text-xs text-ui-subtle mb-3">You need to import your private key to log in on this device.</p>
+                  <label className="btn-secondary cursor-pointer block py-2 rounded-lg text-sm transition-colors hover:bg-ui-border">
                     <span>Select Key File (.json)</span>
                     <input
                       type="file"
@@ -207,9 +211,9 @@ export default function Login() {
               </div>
             ) : (
               <div className="pt-2">
-                <label htmlFor="login-decryption" className="block text-xs font-medium text-[#8890b0] mb-1.5">
+                <label htmlFor="login-decryption" className="block text-xs font-medium text-ui-subtle mb-1.5">
                   Decryption password
-                  <span className="ml-2 font-normal text-[#3a3f5c]">(unlocks your local private key)</span>
+                  <span className="ml-2 font-normal text-ui-muted">(unlocks your local private key)</span>
                 </label>
                 <div className="relative">
                   <input
@@ -226,7 +230,7 @@ export default function Login() {
                     type="button"
                     onClick={() => setShowKeyPwd(v => !v)}
                     aria-label={showKeyPwd ? 'Hide decryption password' : 'Show decryption password'}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#3a3f5c] hover:text-[#8890b0] transition-colors"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-ui-muted hover:text-ui-subtle transition-colors"
                   >
                     {showKeyPwd ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>

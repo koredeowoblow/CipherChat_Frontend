@@ -4,33 +4,32 @@ export default {
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
+  darkMode: 'class',
   theme: {
     extend: {
       colors: {
-        // Cobalt blue — intentional, trustworthy, not teal
         accent: {
-          50:  '#eef0ff',
-          100: '#dde1ff',
-          200: '#c0c7fe',
-          300: '#9ba4fd',
-          400: '#7c85fa',
-          500: '#5c65f5',  // primary action
-          600: '#4148e0',  // hover
-          700: '#3238c4',
-          800: '#2a2f9e',
-          900: '#272c7e',
+          50:  'var(--color-accent-50)',
+          100: 'var(--color-accent-100)',
+          200: 'var(--color-accent-200)',
+          300: 'var(--color-accent-300)',
+          400: 'var(--color-accent-400)',
+          500: 'var(--color-accent-500)',
+          600: 'var(--color-accent-600)',
+          700: 'var(--color-accent-700)',
+          800: 'var(--color-accent-800)',
+          900: 'var(--color-accent-900)',
         },
-        // Dark system — warm-cool charcoal, NOT Tailwind slate clones
         ui: {
-          base:     '#0b0d14',  // page background
-          surface:  '#111320',  // sidebar, panels
-          elevated: '#171b2d',  // hover, selected
-          border:   '#252840',  // card borders
-          border2:  '#1c1f32',  // dividers
-          muted:    '#3a3f5c',  // inactive icons
-          subtle:   '#8890b0',  // secondary text
-          primary:  '#c8ccee',  // body text
-          bright:   '#edf0ff',  // headings
+          base:     'var(--color-ui-base)',
+          surface:  'var(--color-ui-surface)',
+          elevated: 'var(--color-ui-elevated)',
+          border:   'var(--color-ui-border)',
+          border2:  'var(--color-ui-border2)',
+          muted:    'var(--color-ui-muted)',
+          subtle:   'var(--color-ui-subtle)',
+          primary:  'var(--color-ui-primary)',
+          bright:   'var(--color-ui-bright)',
         },
       },
       fontFamily: {

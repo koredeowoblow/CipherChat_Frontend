@@ -18,7 +18,14 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
+import { useEffect } from 'react';
+import useThemeStore from './store/themeStore';
+
 function App() {
+  useEffect(() => {
+    useThemeStore.getState().initializeTheme();
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <Router>

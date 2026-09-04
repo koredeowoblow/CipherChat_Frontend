@@ -7,6 +7,7 @@ import useKeyStore from '../store/keyStore';
 import cryptoService from '../services/cryptoService';
 import nacl from 'tweetnacl';
 import { decodeUTF8, encodeBase64 } from 'tweetnacl-util';
+import ThemeToggle from '../components/ThemeToggle';
 
 export default function Register() {
   const [username, setUsername] = useState('');
@@ -84,13 +85,13 @@ export default function Register() {
 
   if (showDownloadPrompt) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#0b0d14] p-6 text-center">
-        <div className="max-w-md w-full bg-[#111320] border border-[#252840] rounded-xl p-8 shadow-2xl animate-fade-in">
+      <div className="min-h-screen flex items-center justify-center bg-ui-base p-6 text-center">
+        <div className="max-w-md w-full bg-ui-surface border border-ui-border rounded-xl p-8 shadow-2xl animate-fade-in">
           <div className="w-16 h-16 bg-accent-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
             <Download size={32} className="text-accent-500" />
           </div>
-          <h2 className="text-2xl font-bold text-[#edf0ff] mb-4">Download your key file</h2>
-          <p className="text-[#8890b0] text-sm leading-relaxed mb-6">
+          <h2 className="text-2xl font-bold text-ui-bright mb-4">Download your key file</h2>
+          <p className="text-ui-subtle text-sm leading-relaxed mb-6">
             Your account was created successfully! To log into this account on any other device in the future, you <b>must</b> have this key file.
           </p>
           <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-4 mb-8 text-left">
@@ -111,7 +112,7 @@ export default function Register() {
           </button>
           <button
             onClick={() => navigate('/')}
-            className="text-xs text-[#5c65f5] hover:text-[#767df5] mt-6 transition-colors"
+            className="text-xs text-accent-500 hover:text-accent-400 mt-6 transition-colors"
           >
             I'll do this later (not recommended)
           </button>
@@ -121,21 +122,21 @@ export default function Register() {
   }
 
   return (
-    <div className="min-h-screen flex bg-[#0b0d14]">
+    <div className="min-h-screen flex bg-ui-base">
       {/* ── Left branding panel ── */}
-      <div className="hidden lg:flex flex-col justify-between w-[420px] flex-shrink-0 bg-[#0e1019] border-r border-[#1c1f32] p-12">
+      <div className="hidden lg:flex flex-col justify-between w-[420px] flex-shrink-0 bg-ui-surface dark:bg-ui-base/50 border-r border-ui-border2 p-12">
         <div>
           <div className="flex items-center gap-2.5 mb-16">
             <div className="w-8 h-8 rounded-lg bg-accent-500 flex items-center justify-center">
               <Lock size={16} className="text-white" aria-hidden="true" />
             </div>
-            <span className="text-[#edf0ff] font-semibold text-lg tracking-tight">CipherChat</span>
+            <span className="text-ui-bright font-semibold text-lg tracking-tight">CipherChat</span>
           </div>
 
-          <h1 className="text-3xl font-bold text-[#edf0ff] leading-snug mb-4">
+          <h1 className="text-3xl font-bold text-ui-bright leading-snug mb-4">
             Your keys.<br />Your messages.
           </h1>
-          <p className="text-[#8890b0] text-sm leading-relaxed">
+          <p className="text-ui-subtle text-sm leading-relaxed">
             When you register, a unique encryption keypair is generated on your device. Your private key never touches our servers.
           </p>
         </div>
@@ -153,7 +154,10 @@ export default function Register() {
       </div>
 
       {/* ── Right form panel ── */}
-      <div className="flex-1 flex items-center justify-center p-6">
+      <div className="flex-1 flex items-center justify-center p-6 relative">
+        <div className="absolute top-6 right-6">
+          <ThemeToggle />
+        </div>
         <div className="w-full max-w-sm">
 
           {/* Mobile logo */}
@@ -161,11 +165,11 @@ export default function Register() {
             <div className="w-7 h-7 rounded-md bg-accent-500 flex items-center justify-center">
               <Lock size={14} className="text-white" aria-hidden="true" />
             </div>
-            <span className="text-[#edf0ff] font-semibold">CipherChat</span>
+            <span className="text-ui-bright font-semibold">CipherChat</span>
           </div>
 
-          <h2 className="text-2xl font-semibold text-[#edf0ff] mb-1">Create account</h2>
-          <p className="text-sm text-[#8890b0] mb-8">
+          <h2 className="text-2xl font-semibold text-ui-bright mb-1">Create account</h2>
+          <p className="text-sm text-ui-subtle mb-8">
             Already have one?{' '}
             <Link to="/login" className="text-accent-400 hover:text-accent-300 transition-colors">
               Sign in
@@ -197,7 +201,7 @@ export default function Register() {
           <form onSubmit={handleRegister} className="space-y-4" noValidate>
             {/* Username */}
             <div>
-              <label htmlFor="reg-username" className="block text-xs font-medium text-[#8890b0] mb-1.5">Username</label>
+              <label htmlFor="reg-username" className="block text-xs font-medium text-ui-subtle mb-1.5">Username</label>
               <input
                 id="reg-username"
                 type="text"
@@ -214,7 +218,7 @@ export default function Register() {
 
             {/* Email */}
             <div>
-              <label htmlFor="reg-email" className="block text-xs font-medium text-[#8890b0] mb-1.5">Email</label>
+              <label htmlFor="reg-email" className="block text-xs font-medium text-ui-subtle mb-1.5">Email</label>
               <input
                 id="reg-email"
                 type="email"
@@ -229,7 +233,7 @@ export default function Register() {
 
             {/* Account password */}
             <div>
-              <label htmlFor="reg-password" className="block text-xs font-medium text-[#8890b0] mb-1.5">Account password</label>
+              <label htmlFor="reg-password" className="block text-xs font-medium text-ui-subtle mb-1.5">Account password</label>
               <div className="relative">
                 <input
                   id="reg-password"
@@ -246,7 +250,7 @@ export default function Register() {
                   type="button"
                   onClick={() => setShowPwd(v => !v)}
                   aria-label={showPwd ? 'Hide password' : 'Show password'}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#3a3f5c] hover:text-[#8890b0] transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-ui-muted hover:text-ui-subtle transition-colors"
                 >
                   {showPwd ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
@@ -255,15 +259,15 @@ export default function Register() {
 
             {/* Divider */}
             <div className="relative pt-2">
-              <div className="border-t border-[#1c1f32]" />
-              <span className="absolute top-1/2 left-0 -translate-y-1/2 px-3 bg-[#0b0d14] text-[10px] uppercase tracking-widest text-[#3a3f5c] font-medium">
+              <div className="border-t border-ui-border2" />
+              <span className="absolute top-1/2 left-0 -translate-y-1/2 px-3 bg-ui-base text-[10px] uppercase tracking-widest text-ui-muted font-medium">
                 Encryption setup
               </span>
             </div>
 
             {/* Decryption password */}
             <div>
-              <label htmlFor="reg-decryption" className="block text-xs font-medium text-[#8890b0] mb-1.5">
+              <label htmlFor="reg-decryption" className="block text-xs font-medium text-ui-subtle mb-1.5">
                 Decryption password
               </label>
               <div className="relative">
@@ -283,12 +287,12 @@ export default function Register() {
                   type="button"
                   onClick={() => setShowKeyPwd(v => !v)}
                   aria-label={showKeyPwd ? 'Hide decryption password' : 'Show decryption password'}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#3a3f5c] hover:text-[#8890b0] transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-ui-muted hover:text-ui-subtle transition-colors"
                 >
                   {showKeyPwd ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
-              <p id="decryption-hint" className="text-[11px] text-[#3a3f5c] mt-1.5 ml-0.5">
+              <p id="decryption-hint" className="text-[11px] text-ui-muted mt-1.5 ml-0.5">
                 Used to unlock your private key on this device. Different from your account password.
               </p>
             </div>

@@ -5,141 +5,117 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    /* Emerald Accent */
+    --color-accent-50: #ecfdf5;
+    --color-accent-100: #d1fae5;
+    --color-accent-200: #a7f3d0;
+    --color-accent-300: #6ee7b7;
+    --color-accent-400: #34d399;
+    --color-accent-500: #10b981;
+    --color-accent-600: #059669;
+    --color-accent-700: #047857;
+    --color-accent-800: #065f46;
+    --color-accent-900: #064e3b;
+
+    /* Light UI System */
+    --color-ui-base: #f9fafb;
+    --color-ui-surface: #ffffff;
+    --color-ui-elevated: #f3f4f6;
+    --color-ui-border: #e5e7eb;
+    --color-ui-border2: #d1d5db;
+    --color-ui-muted: #9ca3af;
+    --color-ui-subtle: #6b7280;
+    --color-ui-primary: #374151;
+    --color-ui-bright: #111827;
+  }
+
+  .dark {
+    /* Dark UI System */
+    --color-ui-base: #0b0d14;
+    --color-ui-surface: #111320;
+    --color-ui-elevated: #171b2d;
+    --color-ui-border: #252840;
+    --color-ui-border2: #1c1f32;
+    --color-ui-muted: #3a3f5c;
+    --color-ui-subtle: #8890b0;
+    --color-ui-primary: #c8ccee;
+    --color-ui-bright: #edf0ff;
+  }
+
   *, *::before, *::after {
     box-sizing: border-box;
   }
 
   body {
-    background-color: #0b0d14;
-    color: #c8ccee;
+    background-color: var(--color-ui-base);
+    color: var(--color-ui-primary);
     font-family: 'Inter', system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
-  /* Keyboard focus — visible, never just removed */
   :focus-visible {
-    outline: 2px solid #5c65f5;
+    outline: 2px solid var(--color-accent-500);
     outline-offset: 2px;
     border-radius: 4px;
   }
 }
 
 @layer components {
-  /* ── Cards & Surfaces ─────────────────────────────────── */
-  /* No glassmorphism. Solid surfaces with depth. */
-  .card {
-    background-color: #111320;
-    border: 1px solid #252840;
-  }
-
-  .card-elevated {
-    background-color: #171b2d;
-    border: 1px solid #252840;
-  }
-
   /* ── Form Elements ────────────────────────────────────── */
   .input-field {
-    width: 100%;
-    background-color: #0b0d14;
-    border: 1px solid #252840;
-    border-radius: 8px;
-    padding: 12px 16px;
-    color: #edf0ff;
-    font-size: 14px;
-    transition: border-color 0.15s, box-shadow 0.15s;
-    outline: none;
+    @apply w-full bg-ui-base border border-ui-border rounded-lg px-4 py-3 text-ui-bright text-sm transition-colors outline-none;
   }
 
   .input-field::placeholder {
-    color: #3a3f5c;
+    @apply text-ui-muted;
   }
 
   .input-field:focus {
-    border-color: #5c65f5;
-    box-shadow: 0 0 0 3px rgba(92, 101, 245, 0.15);
+    @apply border-accent-500;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15); /* Emerald 500 w/ opacity */
   }
 
   /* ── Buttons ──────────────────────────────────────────── */
   .btn-primary {
-    width: 100%;
-    background-color: #5c65f5;
-    color: #fff;
-    font-weight: 500;
-    font-size: 14px;
-    border-radius: 8px;
-    padding: 12px 20px;
-    border: none;
-    cursor: pointer;
-    transition: background-color 0.15s, transform 0.1s;
+    @apply w-full bg-accent-500 text-white font-medium text-sm rounded-lg px-5 py-3 transition-colors duration-150;
   }
-
   .btn-primary:hover {
-    background-color: #4148e0;
+    @apply bg-accent-600;
   }
-
   .btn-primary:active {
-    transform: scale(0.98);
-    background-color: #3238c4;
+    @apply scale-[0.98] bg-accent-700;
   }
-
   .btn-primary:disabled {
-    opacity: 0.45;
-    cursor: not-allowed;
-    transform: none;
+    @apply opacity-50 cursor-not-allowed scale-100;
   }
 
   .btn-secondary {
-    width: 100%;
-    background-color: #171b2d;
-    color: #c8ccee;
-    font-weight: 500;
-    font-size: 14px;
-    border-radius: 8px;
-    padding: 12px 20px;
-    border: 1px solid #252840;
-    cursor: pointer;
-    transition: background-color 0.15s, transform 0.1s;
+    @apply w-full bg-ui-elevated text-ui-primary font-medium text-sm rounded-lg px-5 py-3 border border-ui-border transition-colors duration-150;
   }
-
   .btn-secondary:hover {
-    background-color: #1f243a;
+    @apply bg-ui-border2; /* slightly darker/lighter */
   }
-
   .btn-secondary:active {
-    transform: scale(0.98);
+    @apply scale-[0.98];
   }
 
   /* ── Toast ────────────────────────────────────────────── */
   .toast {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 12px 16px;
-    border-radius: 10px;
-    font-size: 13px;
-    font-weight: 500;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
-    animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-    max-width: 360px;
+    @apply flex items-center gap-2.5 px-4 py-3 rounded-lg text-[13px] font-medium shadow-xl max-w-[360px] animate-slide-up;
   }
 
   .toast-success {
-    background-color: #0f1f15;
-    border: 1px solid #1a4a28;
-    color: #6fcf97;
+    @apply bg-emerald-50 text-emerald-600 border border-emerald-200 dark:bg-[#0f1f15] dark:text-[#6fcf97] dark:border-[#1a4a28];
   }
 
   .toast-error {
-    background-color: #1f0f0f;
-    border: 1px solid #4a1a1a;
-    color: #eb5757;
+    @apply bg-red-50 text-red-600 border border-red-200 dark:bg-[#1f0f0f] dark:text-[#eb5757] dark:border-[#4a1a1a];
   }
 
   .toast-info {
-    background-color: #111320;
-    border: 1px solid #252840;
-    color: #c8ccee;
+    @apply bg-ui-surface border border-ui-border text-ui-primary;
   }
 
   /* ── Scrollbar ────────────────────────────────────────── */
@@ -151,11 +127,10 @@
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background-color: #252840;
-    border-radius: 999px;
+    @apply bg-ui-border rounded-full;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background-color: #3a3f5c;
+    @apply bg-ui-muted;
   }
 }
 
