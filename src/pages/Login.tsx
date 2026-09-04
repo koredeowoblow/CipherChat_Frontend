@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Lock, LogIn, ShieldCheck, Eye, EyeOff } from 'lucide-react';
 import api from '../services/api';
@@ -17,6 +17,33 @@ export default function Login() {
   const navigate = useNavigate();
   const setAuth = useAuthStore((state) => state.setAuth);
   const setKeys = useKeyStore((state) => state.setKeys);
+  const [hasPrivateKey, setHasPrivateKey] = useState(false);
+
+  useEffect(() => {
+    setHasPrivateKey(!!localStorage.getItem('encryptedPrivateKey'));
+  }, []);
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const content = event.target?.result as string;
+        const parsed = JSON.parse(content);
+        if (parsed.ciphertext && parsed.nonce && parsed.salt) {
+          localStorage.setItem('encryptedPrivateKey', content);
+          setHasPrivateKey(true);
+          setError('');
+        } else {
+          setError('Invalid key file format.');
+        }
+      } catch {
+        setError('Failed to read key file.');
+      }
+    };
+    reader.readAsText(file);
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -160,38 +187,57 @@ export default function Login() {
               </div>
             </div>
 
-            {/* Decryption password */}
-            <div className="pt-2">
-              <label htmlFor="login-decryption" className="block text-xs font-medium text-[#8890b0] mb-1.5">
-                Decryption password
-                <span className="ml-2 font-normal text-[#3a3f5c]">(unlocks your local private key)</span>
-              </label>
-              <div className="relative">
-                <input
-                  id="login-decryption"
-                  type={showKeyPwd ? 'text' : 'password'}
-                  placeholder="••••••••"
-                  autoComplete="off"
-                  className="input-field pr-10"
-                  value={privateKeyPassword}
-                  onChange={(e) => setPrivateKeyPassword(e.target.value)}
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowKeyPwd(v => !v)}
-                  aria-label={showKeyPwd ? 'Hide decryption password' : 'Show decryption password'}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#3a3f5c] hover:text-[#8890b0] transition-colors"
-                >
-                  {showKeyPwd ? <EyeOff size={16} /> : <Eye size={16} />}
-                </button>
+            {/* Decryption password or Import Key */}
+            {!hasPrivateKey ? (
+              <div className="pt-2">
+                <div className="bg-[#171b2d] border border-[#252840] rounded-lg p-4 text-center">
+                  <ShieldCheck size={24} className="mx-auto text-accent-500 mb-2" />
+                  <h3 className="text-sm font-medium text-[#edf0ff] mb-1">Private Key Required</h3>
+                  <p className="text-xs text-[#8890b0] mb-3">You need to import your private key to log in on this device.</p>
+                  <label className="btn-secondary cursor-pointer block py-2 rounded-lg text-sm transition-colors hover:bg-[#252840]">
+                    <span>Select Key File (.json)</span>
+                    <input
+                      type="file"
+                      accept=".json"
+                      className="hidden"
+                      onChange={handleFileUpload}
+                    />
+                  </label>
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="pt-2">
+                <label htmlFor="login-decryption" className="block text-xs font-medium text-[#8890b0] mb-1.5">
+                  Decryption password
+                  <span className="ml-2 font-normal text-[#3a3f5c]">(unlocks your local private key)</span>
+                </label>
+                <div className="relative">
+                  <input
+                    id="login-decryption"
+                    type={showKeyPwd ? 'text' : 'password'}
+                    placeholder="••••••••"
+                    autoComplete="off"
+                    className="input-field pr-10"
+                    value={privateKeyPassword}
+                    onChange={(e) => setPrivateKeyPassword(e.target.value)}
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowKeyPwd(v => !v)}
+                    aria-label={showKeyPwd ? 'Hide decryption password' : 'Show decryption password'}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#3a3f5c] hover:text-[#8890b0] transition-colors"
+                  >
+                    {showKeyPwd ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+              </div>
+            )}
 
             <button
               type="submit"
               id="login-submit"
-              disabled={isLoading}
+              disabled={isLoading || !hasPrivateKey}
               className="btn-primary flex items-center justify-center gap-2 mt-6"
               aria-busy={isLoading}
             >

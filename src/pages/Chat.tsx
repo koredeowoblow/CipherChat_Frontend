@@ -8,7 +8,7 @@ import api from '../services/api';
 import {
   Send, Search, LogOut, MessageSquare, Lock, Plus, X,
   Ban, UserCheck, UserX, ChevronDown, Menu, AlertCircle,
-  CheckCircle2, Info, Settings, ShieldCheck,
+  CheckCircle2, Info, Settings, ShieldCheck, Download,
 } from 'lucide-react';
 
 const TYPING_TIMEOUT = 2500;
@@ -385,6 +385,29 @@ export default function Chat() {
     } catch { showToast('Failed to block user.', 'error'); }
   };
 
+  // ─── Export Key ───────────────────────────────────────────
+  const handleExportKey = () => {
+    try {
+      const encryptedKeyStr = localStorage.getItem('encryptedPrivateKey');
+      if (!encryptedKeyStr) {
+        showToast('No private key found on this device.', 'error');
+        return;
+      }
+      const blob = new Blob([encryptedKeyStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'cipherchat-key.json';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('Key exported securely.', 'success');
+    } catch {
+      showToast('Failed to export key.', 'error');
+    }
+  };
+
   // ─── Render ───────────────────────────────────────────────
   return (
     <>
@@ -409,9 +432,14 @@ export default function Chat() {
             </div>
             <span className="text-[#edf0ff] font-semibold text-sm tracking-tight">CipherChat</span>
           </div>
-          <button onClick={logout} aria-label="Log out" title="Log out" className="p-1.5 rounded-lg text-[#3a3f5c] hover:text-[#8890b0] hover:bg-[#171b2d] transition-colors">
-            <LogOut size={16} aria-hidden />
-          </button>
+          <div className="flex items-center gap-1">
+            <button onClick={handleExportKey} aria-label="Export key" title="Export key" className="p-1.5 rounded-lg text-[#3a3f5c] hover:text-[#8890b0] hover:bg-[#171b2d] transition-colors">
+              <Download size={16} aria-hidden />
+            </button>
+            <button onClick={logout} aria-label="Log out" title="Log out" className="p-1.5 rounded-lg text-[#3a3f5c] hover:text-[#8890b0] hover:bg-[#171b2d] transition-colors">
+              <LogOut size={16} aria-hidden />
+            </button>
+          </div>
         </div>
 
         {/* Current user strip */}
