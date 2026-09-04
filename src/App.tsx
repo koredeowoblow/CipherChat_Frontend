@@ -20,8 +20,11 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
 import { useEffect } from 'react';
 import useThemeStore from './store/themeStore';
+import { useIdleTimeout } from './hooks/useIdleTimeout';
 
 function App() {
+  useIdleTimeout(15 * 60 * 1000); // 15 minutes of inactivity
+
   useEffect(() => {
     useThemeStore.getState().initializeTheme();
   }, []);
