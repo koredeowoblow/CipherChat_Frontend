@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Lock, UserPlus, Eye, EyeOff, AlertTriangle } from 'lucide-react';
+import { Lock, UserPlus, Eye, EyeOff, AlertTriangle, Download } from 'lucide-react';
 import api from '../services/api';
 import useAuthStore from '../store/authStore';
 import useKeyStore from '../store/keyStore';
@@ -17,6 +17,7 @@ export default function Register() {
   const [showKeyPwd, setShowKeyPwd] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showDownloadPrompt, setShowDownloadPrompt] = useState(false);
   const navigate = useNavigate();
   const setAuth = useAuthStore((state) => state.setAuth);
   const setKeys = useKeyStore((state) => state.setKeys);
@@ -54,7 +55,7 @@ export default function Register() {
 
       setKeys(keyPair.privateKey, data.user.publicKey);
       setAuth(data.user, data.token);
-      navigate('/');
+      setShowDownloadPrompt(true);
     } catch (err: any) {
       setError(err.response?.data?.error || err.message || 'Failed to create account. Please try again.');
       setPassword('');
@@ -63,6 +64,61 @@ export default function Register() {
       setIsLoading(false);
     }
   };
+
+  const handleDownloadKey = () => {
+    const encryptedKeyStr = localStorage.getItem('encryptedPrivateKey');
+    if (encryptedKeyStr) {
+      const blob = new Blob([encryptedKeyStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'cipherchat-key.json';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+    // Navigate to chat after downloading
+    navigate('/');
+  };
+
+  if (showDownloadPrompt) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#0b0d14] p-6 text-center">
+        <div className="max-w-md w-full bg-[#111320] border border-[#252840] rounded-xl p-8 shadow-2xl animate-fade-in">
+          <div className="w-16 h-16 bg-accent-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Download size={32} className="text-accent-500" />
+          </div>
+          <h2 className="text-2xl font-bold text-[#edf0ff] mb-4">Download your key file</h2>
+          <p className="text-[#8890b0] text-sm leading-relaxed mb-6">
+            Your account was created successfully! To log into this account on any other device in the future, you <b>must</b> have this key file.
+          </p>
+          <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-4 mb-8 text-left">
+            <div className="flex items-center gap-2 mb-2">
+              <AlertTriangle size={16} className="text-amber-400" />
+              <span className="text-amber-400 font-semibold text-sm">Critical Backup</span>
+            </div>
+            <p className="text-amber-200/70 text-xs leading-relaxed">
+              If you lose this file and clear your browser cache, you will permanently lose access to all your messages. We cannot recover it for you.
+            </p>
+          </div>
+          <button
+            onClick={handleDownloadKey}
+            className="btn-primary w-full flex justify-center items-center gap-2 py-3"
+          >
+            <Download size={18} />
+            <span>Download & Continue</span>
+          </button>
+          <button
+            onClick={() => navigate('/')}
+            className="text-xs text-[#5c65f5] hover:text-[#767df5] mt-6 transition-colors"
+          >
+            I'll do this later (not recommended)
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex bg-[#0b0d14]">
