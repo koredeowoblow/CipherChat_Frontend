@@ -175,6 +175,15 @@
   .scrollbar-hide::-webkit-scrollbar {
     display: none; /* Chrome, Safari and Opera */
   }
+
+  /* Enhance logo visibility, especially on dark backgrounds */
+  img[alt="CipherChat Logo"] {
+    filter: drop-shadow(0 0 3px rgba(0, 0, 0, 0.2));
+  }
+  
+  .dark img[alt="CipherChat Logo"] {
+    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.3)) brightness(1.3);
+  }
 }
 
 /* Motion sensitivity */
