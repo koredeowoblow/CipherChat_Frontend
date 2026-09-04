@@ -139,6 +139,13 @@ export default function Chat() {
   useEffect(() => { userRef.current = user; }, [user]);
   useEffect(() => { activeConversationIdRef.current = activeConversationId; }, [activeConversationId]);
 
+  // Request Notification permission
+  useEffect(() => {
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+  }, []);
+
   // ─── Toast ────────────────────────────────────────────────
   const showToast = useCallback((message: string, type: ToastType = 'info') => {
     const id = Date.now().toString();
@@ -259,6 +266,19 @@ export default function Chat() {
       if (type === 'message:new') {
         addMessage(payload);
         decryptMessages(payload.conversationId, [payload]);
+        
+        // Notify if it's from someone else and we're not actively looking at it
+        if (payload.senderId !== userRef.current?.id) {
+          if (document.hidden || activeConversationIdRef.current !== payload.conversationId) {
+            if ('Notification' in window && Notification.permission === 'granted') {
+              const conv = conversationsRef.current.find(c => c.id === payload.conversationId);
+              const senderName = conv?.participants.find((p: any) => p.user?.id === payload.senderId)?.user?.username || 'Someone';
+              new Notification(`New message from ${senderName}`, {
+                body: 'You have a new encrypted message.'
+              });
+            }
+          }
+        }
 
       } else if (type === 'conversation:new') {
         const existing = conversationsRef.current.find(c => c.id === payload.id);
