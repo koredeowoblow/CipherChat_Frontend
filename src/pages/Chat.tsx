@@ -449,7 +449,7 @@ export default function Chat() {
           <div className="min-w-0">
             <p className="text-ui-bright text-sm font-medium truncate">{user?.username}</p>
             <div className="flex items-center gap-1.5">
-              <span className={`w-1.5 h-1.5 rounded-full ${isConnected ? 'bg-green-500' : 'bg-[#3a3f5c]'}`} aria-hidden />
+              <span className={`w-1.5 h-1.5 rounded-full ${isConnected ? 'bg-green-500' : 'bg-[var(--color-ui-muted)]'}`} aria-hidden />
               <span className="text-[11px] text-ui-muted">{isConnected ? 'Connected' : 'Reconnecting…'}</span>
             </div>
           </div>
@@ -463,9 +463,9 @@ export default function Chat() {
             <input
               id="conv-search" type="search" placeholder="Search…"
               className="w-full pl-7 pr-3 py-1.5 text-sm rounded-md transition-all outline-none"
-              style={{ background: '#0b0d14', border: '1px solid #252840', color: '#c8ccee' }}
-              onFocus={e => (e.target.style.borderColor = '#5c65f5')}
-              onBlur={e => (e.target.style.borderColor = '#252840')}
+              style={{ background: 'var(--color-ui-base)', border: '1px solid var(--color-ui-border)', color: 'var(--color-ui-primary)' }}
+              onFocus={e => (e.target.style.borderColor = 'var(--color-accent-500)')}
+              onBlur={e => (e.target.style.borderColor = 'var(--color-ui-border)')}
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
             />
@@ -483,11 +483,11 @@ export default function Chat() {
         <nav className="flex-1 overflow-y-auto py-1" aria-label="Conversations">
           {isLoadingConvs ? (
             <div className="flex justify-center py-12">
-              <div className="w-5 h-5 border-2 rounded-full animate-spin" style={{ borderColor: '#252840', borderTopColor: '#5c65f5' }} role="status" aria-label="Loading" />
+              <div className="w-5 h-5 border-2 rounded-full animate-spin" style={{ borderColor: 'var(--color-ui-border)', borderTopColor: 'var(--color-accent-500)' }} role="status" aria-label="Loading" />
             </div>
           ) : filteredConversations.length === 0 ? (
             <div className="flex flex-col items-center py-12 px-6 text-center gap-3">
-              <MessageSquare size={28} className="text-[#252840]" aria-hidden />
+              <MessageSquare size={28} className="text-[var(--color-ui-border)]" aria-hidden />
               <p className="text-sm text-ui-muted">{searchQuery ? 'No matches' : 'No conversations yet'}</p>
               {!searchQuery && (
                 <button onClick={() => setIsNewChatOpen(true)} className="text-xs text-accent-400 hover:text-accent-300 transition-colors">
@@ -510,19 +510,19 @@ export default function Chat() {
                   aria-current={isActive ? 'page' : undefined}
                   className="w-full flex items-center gap-2.5 px-3 py-2.5 text-left transition-colors"
                   style={{
-                    background: isActive ? '#171b2d' : 'transparent',
-                    borderLeft: `2px solid ${isActive ? '#5c65f5' : 'transparent'}`,
+                    background: isActive ? 'var(--color-ui-elevated)' : 'transparent',
+                    borderLeft: `2px solid ${isActive ? 'var(--color-accent-500)' : 'transparent'}`,
                   }}
                   onMouseEnter={e => { if (!isActive) (e.currentTarget as HTMLElement).style.background = '#131520'; }}
                   onMouseLeave={e => { if (!isActive) (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
                 >
                   <div className="relative">
                     {otherUser && <Avatar name={otherUser.username} size="sm" />}
-                    {isPendingConv && <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-amber-400 border border-[#0e1019]" aria-hidden />}
+                    {isPendingConv && <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-amber-400 border border-[var(--color-ui-surface)]" aria-hidden />}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5">
-                      <span className="text-sm font-medium truncate" style={{ color: isActive ? '#edf0ff' : '#c8ccee' }}>
+                      <span className="text-sm font-medium truncate" style={{ color: isActive ? 'var(--color-ui-bright)' : 'var(--color-ui-primary)' }}>
                         {otherUser?.username || 'Unknown'}
                       </span>
                       {isPendingConv && (
@@ -531,7 +531,7 @@ export default function Chat() {
                         </span>
                       )}
                     </div>
-                    <p className="text-[11px] truncate mt-0.5" style={{ color: convTyping ? '#5c65f5' : '#3a3f5c' }}>
+                    <p className="text-[11px] truncate mt-0.5" style={{ color: convTyping ? 'var(--color-accent-500)' : 'var(--color-ui-muted)' }}>
                       {convTyping ? 'typing…' : new Date(conv.lastMessageAt).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                     </p>
                   </div>
@@ -543,11 +543,11 @@ export default function Chat() {
       </aside>
 
       {/* ── MAIN CHAT ───────────────────────────────────────── */}
-      <main className="flex-1 flex flex-col overflow-hidden min-w-0" style={{ background: '#0b0d14' }}>
+      <main className="flex-1 flex flex-col overflow-hidden min-w-0" style={{ background: 'var(--color-ui-base)' }}>
         {activeConversationId ? (
           <>
             {/* Header */}
-            <header className="flex items-center justify-between px-4 py-3 flex-shrink-0" style={{ background: '#0e1019', borderBottom: '1px solid #1c1f32' }}>
+            <header className="flex items-center justify-between px-4 py-3 flex-shrink-0" style={{ background: 'var(--color-ui-surface)', borderBottom: '1px solid var(--color-ui-border2)' }}>
               <div className="flex items-center gap-3">
                 <button onClick={() => setIsSidebarOpen(true)} className="md:hidden p-1.5 rounded-md text-ui-muted hover:text-ui-subtle transition-colors mr-1" aria-label="Open sidebar">
                   <Menu size={18} aria-hidden />
@@ -602,7 +602,7 @@ export default function Chat() {
                   </button>
                 </div>
               ) : activeMessages.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full gap-2 text-[#252840]">
+                <div className="flex flex-col items-center justify-center h-full gap-2 text-[var(--color-ui-border)]">
                   <Lock size={24} aria-hidden />
                   <p className="text-sm">No messages yet. Say hello!</p>
                 </div>
@@ -614,8 +614,8 @@ export default function Chat() {
                       <div
                         className="max-w-[70%] md:max-w-[60%] px-4 py-2.5 text-sm leading-relaxed break-words"
                         style={isMine
-                          ? { background: '#3238c4', color: '#edf0ff', borderRadius: '18px 18px 4px 18px' }
-                          : { background: '#171b2d', color: '#c8ccee', border: '1px solid #252840', borderRadius: '18px 18px 18px 4px' }
+                          ? { background: '#3238c4', color: 'var(--color-ui-bright)', borderRadius: '18px 18px 4px 18px' }
+                          : { background: 'var(--color-ui-elevated)', color: 'var(--color-ui-primary)', border: '1px solid var(--color-ui-border)', borderRadius: '18px 18px 18px 4px' }
                         }
                       >
                         {msg.plaintext || (
@@ -625,7 +625,7 @@ export default function Chat() {
                         )}
                         <time
                           className="block text-[10px] mt-1"
-                          style={{ color: isMine ? 'rgba(237,240,255,0.4)' : '#3a3f5c', textAlign: 'right' }}
+                          style={{ color: isMine ? 'var(--color-ui-muted)' : 'var(--color-ui-muted)', textAlign: 'right' }}
                           dateTime={msg.createdAt}
                         >
                           {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -678,9 +678,9 @@ export default function Chat() {
                     type="text"
                     placeholder="Message…"
                     className="flex-1 min-w-0 px-4 py-2.5 rounded-xl text-sm outline-none transition-all"
-                    style={{ background: '#111320', border: '1px solid #252840', color: '#edf0ff' }}
-                    onFocus={e => (e.target.style.borderColor = '#5c65f5')}
-                    onBlur={e => (e.target.style.borderColor = '#252840')}
+                    style={{ background: 'var(--color-ui-surface)', border: '1px solid var(--color-ui-border)', color: 'var(--color-ui-bright)' }}
+                    onFocus={e => (e.target.style.borderColor = 'var(--color-accent-500)')}
+                    onBlur={e => (e.target.style.borderColor = 'var(--color-ui-border)')}
                     value={inputMessage}
                     onChange={e => setInputMessage(e.target.value)}
                     onKeyDown={handleInputKeyDown}
@@ -743,9 +743,9 @@ export default function Chat() {
               <input
                 id="user-search" type="search" placeholder="Search by username…"
                 className="w-full pl-9 pr-4 py-2 rounded-lg text-sm outline-none transition-all"
-                style={{ background: '#0b0d14', border: '1px solid #252840', color: '#edf0ff' }}
-                onFocus={e => (e.target.style.borderColor = '#5c65f5')}
-                onBlur={e => (e.target.style.borderColor = '#252840')}
+                style={{ background: 'var(--color-ui-base)', border: '1px solid var(--color-ui-border)', color: 'var(--color-ui-bright)' }}
+                onFocus={e => (e.target.style.borderColor = 'var(--color-accent-500)')}
+                onBlur={e => (e.target.style.borderColor = 'var(--color-ui-border)')}
                 value={userSearchQuery}
                 onChange={e => handleSearchUsers(e.target.value)}
                 autoFocus
@@ -755,7 +755,7 @@ export default function Chat() {
           <div className="max-h-72 overflow-y-auto p-2" role="listbox" aria-label="Search results">
             {isSearchingUsers ? (
               <div className="flex justify-center py-10">
-                <div className="w-5 h-5 border-2 rounded-full animate-spin" style={{ borderColor: '#252840', borderTopColor: '#5c65f5' }} role="status" />
+                <div className="w-5 h-5 border-2 rounded-full animate-spin" style={{ borderColor: 'var(--color-ui-border)', borderTopColor: 'var(--color-accent-500)' }} role="status" />
               </div>
             ) : userSearchResults.length > 0 ? (
               userSearchResults.map(u => (
@@ -763,7 +763,7 @@ export default function Chat() {
                   key={u.id} role="option" aria-selected="false"
                   onClick={() => handleStartChat(u.id)}
                   className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-colors"
-                  onMouseEnter={e => (e.currentTarget.style.background = '#171b2d')}
+                  onMouseEnter={e => (e.currentTarget.style.background = 'var(--color-ui-elevated)')}
                   onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
                 >
                   <Avatar name={u.username} />
