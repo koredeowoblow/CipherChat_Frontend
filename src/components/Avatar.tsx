@@ -1,4 +1,4 @@
-import React from 'react';
+// Removed unused React import
 
 type AvatarProps = {
   name: string;

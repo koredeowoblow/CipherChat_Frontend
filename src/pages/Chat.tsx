@@ -10,7 +10,7 @@ import {
   Send, Search, LogOut, MessageSquare, Lock, Plus, X,
   Ban, UserCheck, UserX, ChevronDown, Menu, AlertCircle,
   CheckCircle2, Info, Settings, ShieldCheck, Download,
-  Mic, Trash2, Image as ImageIcon, Reply
+  Mic, Trash2, Image as ImageIcon, Reply, Bell
 } from 'lucide-react';
 import Avatar from '../components/Avatar';
 
@@ -97,6 +97,31 @@ export default function Chat() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [hoveredMessageId, setHoveredMessageId] = useState<string | null>(null);
   const [replyingToMessage, setReplyingToMessage] = useState<any | null>(null);
+  const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>('default');
+
+  useEffect(() => {
+    if ('Notification' in window) {
+      setNotificationPermission(Notification.permission);
+    }
+  }, []);
+
+  const requestNotificationPermission = async () => {
+    if (!('Notification' in window)) {
+      showToast('Notifications are not supported in this browser.', 'error');
+      return;
+    }
+    try {
+      const permission = await Notification.requestPermission();
+      setNotificationPermission(permission);
+      if (permission === 'granted') {
+        showToast('Notifications enabled!', 'success');
+      } else {
+        showToast('Notifications were denied.', 'error');
+      }
+    } catch (e) {
+      showToast('Could not request notification permissions.', 'error');
+    }
+  };
 
   // Audio recording state
   const [isRecording, setIsRecording] = useState(false);
@@ -259,9 +284,23 @@ export default function Chat() {
             if ('Notification' in window && Notification.permission === 'granted') {
               const conv = conversationsRef.current.find(c => c.id === payload.conversationId);
               const senderName = conv?.participants.find((p: any) => p.user?.id === payload.senderId)?.user?.username || 'Someone';
-              new Notification(`New message from ${senderName}`, {
-                body: 'You have a new encrypted message.'
-              });
+              
+              if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.ready.then(registration => {
+                  registration.showNotification(`New message from ${senderName}`, {
+                    body: 'You have a new encrypted message.'
+                  });
+                }).catch(() => {
+                  // Fallback for environments without active SW
+                  new Notification(`New message from ${senderName}`, {
+                    body: 'You have a new encrypted message.'
+                  });
+                });
+              } else {
+                new Notification(`New message from ${senderName}`, {
+                  body: 'You have a new encrypted message.'
+                });
+              }
             }
           }
         }
@@ -731,6 +770,11 @@ export default function Chat() {
           </div>
           <div className="flex items-center gap-1">
             <ThemeToggle />
+            {notificationPermission === 'default' && (
+              <button onClick={requestNotificationPermission} aria-label="Enable notifications" className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-ui-muted hover:text-[var(--color-ui-success)] hover:bg-[var(--color-ui-success)]/10 transition-colors">
+                <Bell size={16} aria-hidden />
+              </button>
+            )}
             <button onClick={handleExportKey} aria-label="Export key" className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-ui-muted hover:text-ui-subtle hover:bg-ui-elevated transition-colors">
               <Download size={16} aria-hidden />
             </button>
