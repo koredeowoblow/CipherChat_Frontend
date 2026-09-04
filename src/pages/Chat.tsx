@@ -508,13 +508,9 @@ export default function Chat() {
                   onClick={() => { setActiveConversation(conv.id); setIsSidebarOpen(false); }}
                   aria-label={`Chat with ${otherUser?.username || 'Unknown'}${isPendingConv ? ' (pending)' : ''}`}
                   aria-current={isActive ? 'page' : undefined}
-                  className="w-full flex items-center gap-2.5 px-3 py-2.5 text-left transition-colors"
-                  style={{
-                    background: isActive ? 'var(--color-ui-elevated)' : 'transparent',
-                    borderLeft: `2px solid ${isActive ? 'var(--color-accent-500)' : 'transparent'}`,
-                  }}
-                  onMouseEnter={e => { if (!isActive) (e.currentTarget as HTMLElement).style.background = '#131520'; }}
-                  onMouseLeave={e => { if (!isActive) (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
+                  className={`w-full flex items-center gap-2.5 px-3 py-2.5 text-left transition-colors border-l-2 ${
+                    isActive ? 'bg-ui-elevated border-accent-500' : 'border-transparent hover:bg-ui-elevated'
+                  }`}
                 >
                   <div className="relative">
                     {otherUser && <Avatar name={otherUser.username} size="sm" />}
@@ -522,7 +518,7 @@ export default function Chat() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5">
-                      <span className="text-sm font-medium truncate" style={{ color: isActive ? 'var(--color-ui-bright)' : 'var(--color-ui-primary)' }}>
+                      <span className={`text-sm font-medium truncate ${isActive ? 'text-ui-bright' : 'text-ui-primary'}`}>
                         {otherUser?.username || 'Unknown'}
                       </span>
                       {isPendingConv && (
@@ -612,11 +608,11 @@ export default function Chat() {
                   return (
                     <div key={msg.id} className={`flex msg-enter ${isMine ? 'justify-end' : 'justify-start'}`}>
                       <div
-                        className="max-w-[70%] md:max-w-[60%] px-4 py-2.5 text-sm leading-relaxed break-words"
-                        style={isMine
-                          ? { background: '#3238c4', color: 'var(--color-ui-bright)', borderRadius: '18px 18px 4px 18px' }
-                          : { background: 'var(--color-ui-elevated)', color: 'var(--color-ui-primary)', border: '1px solid var(--color-ui-border)', borderRadius: '18px 18px 18px 4px' }
-                        }
+                        className={`max-w-[70%] md:max-w-[60%] px-4 py-2.5 text-sm leading-relaxed break-words ${
+                          isMine 
+                            ? 'bg-accent-500 text-white rounded-[18px_18px_4px_18px]' 
+                            : 'bg-ui-elevated text-ui-primary border border-ui-border rounded-[18px_18px_18px_4px]'
+                        }`}
                       >
                         {msg.plaintext || (
                           <span className="flex items-center gap-1.5 opacity-50 italic text-xs">
@@ -624,8 +620,7 @@ export default function Chat() {
                           </span>
                         )}
                         <time
-                          className="block text-[10px] mt-1"
-                          style={{ color: isMine ? 'var(--color-ui-muted)' : 'var(--color-ui-muted)', textAlign: 'right' }}
+                          className={`block text-[10px] mt-1 text-right ${isMine ? 'text-accent-100' : 'text-ui-muted'}`}
                           dateTime={msg.createdAt}
                         >
                           {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
