@@ -158,9 +158,11 @@ export default function Login() {
         <div className="w-full max-w-sm">
           {/* Mobile logo */}
           <div className="flex items-center gap-2 mb-10 lg:hidden">
-            <div className="w-7 h-7 rounded-md bg-accent-500 flex items-center justify-center">
-              <Lock size={14} className="text-white" aria-hidden="true" />
-            </div>
+            <img
+              src="/logos.png"
+              alt="CipherChat Logo"
+              className="w-8 h-8 object-contain"
+            />
             <span className="text-ui-bright font-semibold">CipherChat</span>
           </div>
 
