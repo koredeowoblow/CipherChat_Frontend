@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Lock, LogIn, ShieldCheck, Eye, EyeOff } from "lucide-react";
+import { LogIn, ShieldCheck, Eye, EyeOff } from "lucide-react";
 import api from "../services/api";
 import useAuthStore from "../store/authStore";
 import useKeyStore from "../store/keyStore";
