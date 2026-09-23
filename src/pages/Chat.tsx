@@ -219,7 +219,6 @@ export default function Chat() {
         try {
           updateMessagePlaintext(conversationId, msg.id, cryptoService.decryptMessage(msg.encryptedContent, msg.iv, ss));
         } catch (e) {
-          console.error('Decryption failed for msg:', msg, 'Error:', e);
           updateMessagePlaintext(conversationId, msg.id, '⚠ Decryption failed');
         }
       }

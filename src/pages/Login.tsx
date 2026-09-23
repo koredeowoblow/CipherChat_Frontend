@@ -67,10 +67,15 @@ export default function Login() {
       }
 
       const storedEncryptedKey = JSON.parse(storedEncryptedKeyStr);
-      const decryptedPrivateKey = cryptoService.decryptPrivateKey(
-        storedEncryptedKey,
-        privateKeyPassword,
-      );
+      let decryptedPrivateKey;
+      try {
+        decryptedPrivateKey = cryptoService.decryptPrivateKey(
+          storedEncryptedKey,
+          privateKeyPassword,
+        );
+      } catch (err) {
+        throw new Error("Incorrect key password. Please check your key password and try again.");
+      }
       
       // VERIFY that the private key matches the public key!
       if (!cryptoService.verifyKeyPair(data.user.publicKey, decryptedPrivateKey)) {
