@@ -71,10 +71,11 @@ export default function Login() {
         storedEncryptedKey,
         privateKeyPassword,
       );
-      cryptoService.computeSharedSecret(
-        data.user.publicKey,
-        decryptedPrivateKey,
-      );
+      
+      // VERIFY that the private key matches the public key!
+      if (!cryptoService.verifyKeyPair(data.user.publicKey, decryptedPrivateKey)) {
+        throw new Error("The imported private key does not match this account's public key.");
+      }
 
       setKeys(decryptedPrivateKey, data.user.publicKey);
       setAuth(data.user, data.token);

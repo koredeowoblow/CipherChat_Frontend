@@ -13,6 +13,15 @@ class CryptoService {
     };
   }
 
+  public verifyKeyPair(publicKeyBase64: string, privateKeyBase64: string) {
+    try {
+      const computedKeyPair = nacl.box.keyPair.fromSecretKey(decodeBase64(privateKeyBase64));
+      return encodeBase64(computedKeyPair.publicKey) === publicKeyBase64;
+    } catch {
+      return false;
+    }
+  }
+
   /**
    * Encrypt message for transmission using shared secret
    */
