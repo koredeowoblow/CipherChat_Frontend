@@ -17,7 +17,7 @@ const useKeyStore = create<KeyState>()(
       privateKey: null,
       publicKey: null,
       sharedSecrets: {},
-      setKeys: (privateKey, publicKey) => set({ privateKey, publicKey }),
+      setKeys: (privateKey, publicKey) => set({ privateKey, publicKey, sharedSecrets: {} }),
       setSharedSecret: (conversationId, secret) => set((state) => ({
         sharedSecrets: {
           ...state.sharedSecrets,

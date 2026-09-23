@@ -782,7 +782,10 @@ export default function Chat() {
             <button onClick={handleExportKey} aria-label="Export key" className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-ui-muted hover:text-ui-subtle hover:bg-ui-elevated transition-colors">
               <Download size={16} aria-hidden />
             </button>
-            <button onClick={logout} aria-label="Log out" className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-ui-muted hover:text-ui-subtle hover:bg-ui-elevated transition-colors">
+            <button onClick={() => {
+              useKeyStore.getState().clearKeys();
+              logout();
+            }} aria-label="Log out" className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-ui-muted hover:text-ui-subtle hover:bg-ui-elevated transition-colors">
               <LogOut size={16} aria-hidden />
             </button>
           </div>
